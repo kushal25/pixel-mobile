@@ -8,8 +8,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -56,11 +58,13 @@ public class MainActivity extends AppCompatActivity {
     private RelativeLayout imagePreviewLayout;
     private Button uploadButton;
     private Button retryButton;
+    private Button galleryButton;
     private LinearLayout mainWaitLayout;
     private static final String TAG = "Main Activity";
 
 
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
+    private int PICK_IMAGE_REQUEST = 1;
     // Intent request code to handle updating play services if needed.
     private static final int RC_HANDLE_GMS = 9001;
 
@@ -106,7 +110,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "Error accessing file: " + e.getMessage());
                 }
 
-                setContainersVisibility(View.INVISIBLE);
+                //setContainersVisibility(View.INVISIBLE);
+                imagePreviewLayout.setVisibility(View.INVISIBLE);
+                buttonLayout.setVisibility(View.INVISIBLE);
                 new UploadPicture().execute(pictureFile);
                 mainWaitLayout.setVisibility(View.VISIBLE);
             }
@@ -117,12 +123,51 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 imageData = null;
                 startCameraSource();
-                setContainersVisibility(View.INVISIBLE);
+                imagePreviewLayout.setVisibility(View.GONE);
+                mPreview.setVisibility(View.VISIBLE);
+                //setContainersVisibility(View.INVISIBLE);
+            }
+        });
+
+        galleryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent();
+// Show only images, no videos or anything else
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+// Always show the chooser (if there are multiple options available)
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
             }
         });
 
 
     }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            Uri uri = data.getData();
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                mPreview.setVisibility(View.GONE);
+                imagePreviewLayout.setVisibility(View.VISIBLE);
+                capturedPicturePreview.setImageBitmap(bitmap);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                byte[] byteArray = stream.toByteArray();
+                imageData = byteArray;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     public void initViews()
     {
@@ -134,19 +179,7 @@ public class MainActivity extends AppCompatActivity {
         uploadButton = (Button) findViewById(R.id.uploadButton);
         retryButton = (Button) findViewById(R.id.retryButton);
         mainWaitLayout = (LinearLayout) findViewById(R.id.main_wait_layout);
-
-
-    }
-
-    private void setContainersVisibility(int visibility) {
-        // stop preview
-        if (visibility == View.VISIBLE) {
-            mPreview.stop();
-        }
-
-        retryButton.setVisibility(visibility);
-        uploadButton.setVisibility(visibility);
-        capturedPicturePreview.setVisibility(visibility);
+        galleryButton = (Button) findViewById(R.id.galleryButton);
     }
 
     public void dispatchTakePictureIntent() {

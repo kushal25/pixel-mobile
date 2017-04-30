@@ -32,6 +32,11 @@
             </intent-filter>
         </activity>
         <activity android:name=".ExtractedDataActivity" />
+        <activity
+            android:name=".SignupActivity"
+            android:hardwareAccelerated="false"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
