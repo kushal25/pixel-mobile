@@ -16,17 +16,12 @@ import android.widget.Toast;
 
 public class Pixie {
 
-    private static final int MEDIA_TYPE_IMAGE = 1;
-    private static final int REQUEST_INTERNET = 4;
 
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    public static final int REQUEST_IMAGE_CAPTURE = 1;
-    private static final int RC_HANDLE_GMS = 9001;
-    private static final int RC_HANDLE_CAMERA_PERM = 2;
 
     public static void appInit(Context cx) {
         //P.read(cx);
