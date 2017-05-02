@@ -35,6 +35,14 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
         extracted_items = new ArrayList<>();
         lv = (ListView) findViewById(R.id.extracted_items);
         lv.setLongClickable(true);
+        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + i, Toast.LENGTH_LONG).show();
+
+                return true;
+            }
+        });
         new GetContacts().execute();
     }
     //Implemented Long click on list view for extracted data.
