@@ -1,10 +1,14 @@
 package com.example.infinity.pixie;
 
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -19,7 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.RunnableFuture;
 
-public class ExtractedDataActivity extends AppCompatActivity {
+public class ExtractedDataActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener{
     private ProgressDialog progressDialog;
     private ListView lv;
     ArrayList<HashMap<String, String>> extracted_items;
@@ -30,7 +34,15 @@ public class ExtractedDataActivity extends AppCompatActivity {
         setContentView(R.layout.activity_extracted_data);
         extracted_items = new ArrayList<>();
         lv = (ListView) findViewById(R.id.extracted_items);
+        lv.setLongClickable(true);
         new GetContacts().execute();
+    }
+    //Implemented Long click on list view for extracted data.
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText(this, "long clicked pos: " + position, Toast.LENGTH_LONG).show();
+
+        return true;
     }
 
     /**
@@ -139,6 +151,7 @@ public class ExtractedDataActivity extends AppCompatActivity {
             return null;
 
         }
+        @TargetApi(Build.VERSION_CODES.CUPCAKE)
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
