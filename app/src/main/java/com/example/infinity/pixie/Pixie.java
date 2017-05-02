@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v4.app.ActivityCompat;
@@ -16,7 +17,7 @@ import android.widget.Toast;
 
 public class Pixie {
 
-
+    public static Typeface fontawesome = null;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -24,7 +25,7 @@ public class Pixie {
     };
 
     public static void appInit(Context cx) {
-        //P.read(cx);
+        P.read(cx);
 
     }
 
@@ -75,6 +76,19 @@ public class Pixie {
             return false;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public static final class P {
+        public static void read(Context cx)
+        {
+            try {
+                if (null == fontawesome)
+                    fontawesome = Typeface.createFromAsset(cx.getAssets(), "fontawesome.ttf");
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 }

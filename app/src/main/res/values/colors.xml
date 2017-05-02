@@ -12,4 +12,9 @@
     <color name="transparent_white">#88FFFFFF</color>
     <color name="selectedIconColor">#000000</color>
     <color name="unselectedIconColor">#AAAAAA</color>
+
+
+    <color name="background_color">#009688</color>
+    <color name="white_greyish">#EEEEEE</color>
+    <color name="button_selectorcolor">#9E9E9E</color>
 </resources>
