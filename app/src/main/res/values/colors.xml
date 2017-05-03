@@ -17,4 +17,6 @@
     <color name="background_color">#009688</color>
     <color name="white_greyish">#EEEEEE</color>
     <color name="button_selectorcolor">#9E9E9E</color>
+
+    <color name="error_response">#ff0000</color>
 </resources>

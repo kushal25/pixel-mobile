@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -36,47 +37,36 @@ import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
 import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
-public class SignupActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
-    //    private TextView nameIcon;
-    private TextInputLayout fullName, emailId, password, confirmPassword, mobileNumber;
-    private EditText fullNameEdit, emailIdEdit, passwordEdit, confirmPasswordEdit, mobileNumberEdit;
-    private CheckBox terms;
-    private Button signUpButton;
-    private String nameString, emailIdString, passwordString, confirmPasswordString, mobileNumberString;
-    private LinearLayout signupWaitLayout;
-    private RelativeLayout signupLayout;
+    private TextInputLayout emailId, password;
+    private EditText emailIdEdit, passwordEdit;
+    private Button loginButton;
+    private String emailIdString, passwordString;
+    private LinearLayout loginWaitLayout;
+    private RelativeLayout loginLayout;
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9#_~!$&'()*+,;=:.\"(),:;<>@\\[\\]\\\\]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*$";
     private Pattern pattern = Pattern.compile(EMAIL_PATTERN);
     private Matcher matcher;
     private TextView errorResponse;
     HttpResponse httpResponse;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signup);
+        setContentView(R.layout.activity_login);
         initViews();
 
-        signUpButton.setOnClickListener(new View.OnClickListener() {
+        loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                nameString = fullNameEdit.getText().toString();
                 emailIdString = emailIdEdit.getText().toString();
                 passwordString = passwordEdit.getText().toString();
-                confirmPasswordString = confirmPasswordEdit.getText().toString();
-                mobileNumberString = mobileNumberEdit.getText().toString();
 
-                fullName.setError(null);
                 emailId.setError(null);
                 password.setError(null);
-                confirmPassword.setError(null);
-                mobileNumber.setError(null);
 
-                if (nameString.trim().isEmpty()) {
-                    fullName.setError("Name field cannot be empty");
-                } else if (emailIdString.trim().isEmpty()) {
+                if (emailIdString.trim().isEmpty()) {
                     emailId.setError("Email field cannot be empty");
                 } else if (!validateEmail(emailIdString)) {
                     emailId.setError("Email Address is Invalid");
@@ -84,31 +74,15 @@ public class SignupActivity extends AppCompatActivity {
                     password.setError("Password field cannot be empty");
                 } else if (passwordString.trim().length() < 8) {
                     password.setError("Password Should be 8 or more characters");
-                } else if (confirmPasswordString.trim().isEmpty()) {
-                    confirmPassword.setError("Confirm Password field cannot be empty");
-                } else if (confirmPasswordString.trim().length() < 8) {
-                    confirmPassword.setError("Confirm Password Should be 8 or more characters");
-                } else if (!passwordString.equals(confirmPasswordString)) {
-                    Pixie.showToast(SignupActivity.this, "Password and Confirm Password is not the same");
-                } else if (mobileNumberString.trim().isEmpty()) {
-                    mobileNumber.setError("Mobile Number field cannot be empty");
-                } else if (!terms.isChecked()) {
-                    Pixie.showToast(SignupActivity.this, "Please Check the terms and conditions for signup");
                 } else {
-                    fullName.setErrorEnabled(false);
                     emailId.setErrorEnabled(false);
                     password.setErrorEnabled(false);
-                    confirmPassword.setErrorEnabled(false);
-                    mobileNumber.setErrorEnabled(false);
-                    sendPostRequest(nameString, emailIdString, passwordString, mobileNumberString);
-                    signupLayout.setVisibility(View.GONE);
-                    signupWaitLayout.setVisibility(View.VISIBLE);
+                    sendPostRequest(emailIdString, passwordString);
+                    loginLayout.setVisibility(View.GONE);
+                    loginWaitLayout.setVisibility(View.VISIBLE);
                 }
-
-
             }
         });
-
     }
 
     public boolean validateEmail(String email) {
@@ -117,52 +91,38 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     public void initViews() {
-//        nameIcon = (TextView) findViewById(R.id.nameIcon);
-//        nameIcon.setTypeface(Pixie.fontawesome);
-        fullName = (TextInputLayout) findViewById(R.id.fullNameLayout);
-        emailId = (TextInputLayout) findViewById(R.id.userEmailIdLayout);
-        password = (TextInputLayout) findViewById(R.id.passwordLayout);
-        confirmPassword = (TextInputLayout) findViewById(R.id.confirmPasswordLayout);
-        mobileNumber = (TextInputLayout) findViewById(R.id.mobileNumberLayout);
-        fullNameEdit = (EditText) findViewById(R.id.fullName);
-        emailIdEdit = (EditText) findViewById(R.id.userEmailId);
-        passwordEdit = (EditText) findViewById(R.id.password);
-        confirmPasswordEdit = (EditText) findViewById(R.id.confirmPassword);
-        mobileNumberEdit = (EditText) findViewById(R.id.mobileNumber);
-        terms = (CheckBox) findViewById(R.id.terms_conditions);
-        signUpButton = (Button) findViewById(R.id.signUpBtn);
-        signupWaitLayout = (LinearLayout) findViewById(R.id.signup_wait_layout);
-        errorResponse = (TextView) findViewById(R.id.errorResponse);
-        signupLayout = (RelativeLayout) findViewById(R.id.signupLayout);
 
+        emailId = (TextInputLayout) findViewById(R.id.userEmailIdLoginLayout);
+        password = (TextInputLayout) findViewById(R.id.passwordLoginLayout);
+        emailIdEdit = (EditText) findViewById(R.id.userEmailIdLogin);
+        passwordEdit = (EditText) findViewById(R.id.passwordLogin);
+        loginButton = (Button) findViewById(R.id.loginBtn);
+        loginWaitLayout = (LinearLayout) findViewById(R.id.login_wait_layout);
+        errorResponse = (TextView) findViewById(R.id.errorResponseLogin);
+        loginLayout = (RelativeLayout) findViewById(R.id.loginLayout);
     }
 
-        private void sendPostRequest(String uName, String uEmail, String uPass, String uMob) {
-            class UserSignup extends AsyncTask<String, Void, String> {
+    private void sendPostRequest(String uEmail, String uPass) {
+        class UserLogin extends AsyncTask<String, Void, String> {
 
             @Override
             protected String doInBackground(String... params) {
 
-                String userName = params[0];
-                String userEmail = params[1];
-                String userPassword = params[2];
-                String mobileNumber = params[3];
+                String userEmail = params[0];
+                String userPassword = params[1];
 
                 HttpClient httpClient = new DefaultHttpClient();
 
-                final HttpPost httppost = new HttpPost("http://52.53.93.85/api/users/userSignup");
+                final HttpPost httppost = new HttpPost("http://52.53.93.85/api/users/userLogin");
 
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
 
-                nameValuePairs.add(new BasicNameValuePair("userName", userName));
                 nameValuePairs.add(new BasicNameValuePair("userEmail", userEmail));
                 nameValuePairs.add(new BasicNameValuePair("userPassword", userPassword));
-                nameValuePairs.add(new BasicNameValuePair("userPhoneNumber", mobileNumber));
 
                 try {
                     UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuePairs);
                     httppost.setEntity(urlEncodedFormEntity);
-
                     try {
                         httpResponse = httpClient.execute(httppost);
                         InputStream inputStream = httpResponse.getEntity().getContent();
@@ -174,6 +134,7 @@ public class SignupActivity extends AppCompatActivity {
                             stringBuilder.append(bufferedStrChunk);
                         }
                         return stringBuilder.toString();
+
 
                     } catch (ClientProtocolException cpe) {
                         System.out.println("First Exception HttpResponese :" + cpe);
@@ -195,17 +156,16 @@ public class SignupActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(final String response) {
                 super.onPostExecute(response);
-
-                signupWaitLayout.setVisibility(View.GONE);
+                loginWaitLayout.setVisibility(View.GONE);
                 if(httpResponse.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK)
                 {
-                    Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(intent);
                     overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
                 }
                 else
                 {
-                    signupLayout.setVisibility(View.VISIBLE);
+                    loginLayout.setVisibility(View.VISIBLE);
                     errorResponse.setVisibility(View.VISIBLE);
                     try {
                         JSONObject jsonObj = new JSONObject(response);
@@ -219,8 +179,8 @@ public class SignupActivity extends AppCompatActivity {
         }
 
 
-        UserSignup signup = new UserSignup();
-        signup.execute(uName, uEmail, uPass, uMob);
+        UserLogin login = new UserLogin();
+        login.execute(uEmail, uPass);
     }
 
     @Override
@@ -230,8 +190,3 @@ public class SignupActivity extends AppCompatActivity {
         overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
     }
 }
-
-
-
-
-

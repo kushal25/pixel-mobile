@@ -30,7 +30,7 @@ public class HomeActivity extends AppCompatActivity {
         existingUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent existingUserIntent = new Intent(HomeActivity.this, MainActivity.class);
+                Intent existingUserIntent = new Intent(HomeActivity.this, LoginActivity.class);
                 startActivity(existingUserIntent);
                 overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
             }
