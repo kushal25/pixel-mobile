@@ -123,8 +123,8 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
         @Override
         protected Void doInBackground(Void... arg0) {
             //Add to database:
-            //String imgName = mainActivity.imgName;
-            String imgName =  "img-2";
+            String imgName = mainActivity.imgName;
+
             String email =null;
             String number =null;
             String url =null;
@@ -134,7 +134,9 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
             String text =null;
             //////
             String extractedData = getIntent().getStringExtra("ExtractedData");
-            extractedData = "{\n" +
+            //Uncomment to test.
+            //String imgName =  "img-2";
+            /*extractedData = "{\n" +
                     "                \"ExtractedData\": [\n" +
                     "        {\n" +
                     "            \"metadata\": \"email\",\n" +
@@ -161,7 +163,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                     "           ]\n" +
                     "        }\n" +
                     "        ]\n" +
-                    "        };";
+                    "        };";*/
             //Log.d("ex data", extractedData);
             //Pixie.showToast(ExtractedDataActivity.this,extractedData);
 
