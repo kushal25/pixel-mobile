@@ -22,15 +22,12 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         initView();
 
-        final Animation leftRightIn = AnimationUtils.loadAnimation(this, R.anim.slide_from_left);
-        final Animation leftRightOut = AnimationUtils.loadAnimation(this, R.anim.slide_from_right);
-
         gifImageView.setGifImageResource(R.drawable.gif_image);
 
         existingUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent existingUserIntent = new Intent(HomeActivity.this, LoginActivity.class);
+                Intent existingUserIntent = new Intent(HomeActivity.this, MainActivity.class);
                 startActivity(existingUserIntent);
                 overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
             }

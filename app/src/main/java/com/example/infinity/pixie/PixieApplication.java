@@ -11,6 +11,10 @@ public class PixieApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Pixie.appInit(this);
+    }
 
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
     }
 }
