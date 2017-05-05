@@ -21,7 +21,12 @@
     <string name="back">BACK</string>
 
 
-    <!-- icons -->
-    <string name="userNameIcon">&#xf26e;</string>
+    <!--fontawesome icons -->
+    <string name="profile_icon">&#xf007;</string>
+    <string name="retry_icon">&#xf00d;</string>
+    <string name="crop_icon">&#xf125;</string>
+    <string name="rotate_icon">&#xf01e;</string>
+    <string name="upload_icon">&#xf093;</string>
+    <string name="gallery_icon">&#xf03e;</string>
 
 </resources>

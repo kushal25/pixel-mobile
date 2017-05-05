@@ -83,8 +83,9 @@ public class Pixie {
         public static void read(Context cx)
         {
             try {
-                if (null == fontawesome)
+                if (null == fontawesome) {
                     fontawesome = Typeface.createFromAsset(cx.getAssets(), "fontawesome.ttf");
+                }
             }catch(Exception e)
             {
                 e.printStackTrace();

@@ -10,24 +10,24 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -39,8 +39,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -53,13 +51,16 @@ public class MainActivity extends AppCompatActivity {
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
-    private ImageView capturedPicturePreview;
+//    private ImageView capturedPicturePreview;
     private FrameLayout cameraLayout;
     private RelativeLayout buttonLayout;
     private RelativeLayout imagePreviewLayout;
     private Button uploadButton;
     private Button retryButton;
     private Button galleryButton;
+    private Button rotateButton;
+    private Button profileButton;
+    private Button cropButton;
     private LinearLayout mainWaitLayout;
     private static final String TAG = "Main Activity";
     public static String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -81,6 +82,10 @@ public class MainActivity extends AppCompatActivity {
 
     private byte[] imageData = null;
     File pictureFile = null;
+
+    private CropImageView mCropImageView;
+
+    private Uri mCropImageUri;
 
 
     @Override
@@ -113,8 +118,9 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 //setContainersVisibility(View.INVISIBLE);
-                imagePreviewLayout.setVisibility(View.INVISIBLE);
-                buttonLayout.setVisibility(View.INVISIBLE);
+                imagePreviewLayout.setVisibility(View.GONE);
+                buttonLayout.setVisibility(View.GONE);
+                profileButton.setVisibility(View.GONE);
                 new UploadPicture().execute(pictureFile);
                 mainWaitLayout.setVisibility(View.VISIBLE);
             }
@@ -127,6 +133,8 @@ public class MainActivity extends AppCompatActivity {
                 startCameraSource();
                 imagePreviewLayout.setVisibility(View.GONE);
                 mPreview.setVisibility(View.VISIBLE);
+                buttonLayout.setVisibility(View.VISIBLE);
+                profileButton.setVisibility(View.VISIBLE);
                 //setContainersVisibility(View.INVISIBLE);
             }
         });
@@ -134,18 +142,43 @@ public class MainActivity extends AppCompatActivity {
         galleryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+//                Intent intent = new Intent(MainActivity.this,GalleryActivity.class);
+//                startActivity(intent);
                 Intent intent = new Intent();
 // Show only images, no videos or anything else
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
 // Always show the chooser (if there are multiple options available)
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+
+                //startActivityForResult(getPickImageChooserIntent(), 200);
             }
         });
 
+        rotateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("Rotation", "rotating by 90");
+                mCropImageView.setRotation(mCropImageView.getRotation() + 90);
+            }
+        });
+
+        profileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Pixie.showToast(MainActivity.this,"Go to profile Screen");
+            }
+        });
+
+        cropButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onCropImageClick();
+            }
+        });
 
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -154,16 +187,16 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
 
             Uri uri = data.getData();
-
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 mPreview.setVisibility(View.GONE);
+                buttonLayout.setVisibility(View.GONE);
+                profileButton.setVisibility(View.GONE);
                 imagePreviewLayout.setVisibility(View.VISIBLE);
-                capturedPicturePreview.setImageBitmap(bitmap);
+                mCropImageView.setImageBitmap(bitmap);
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                byte[] byteArray = stream.toByteArray();
-                imageData = byteArray;
+                imageData= stream.toByteArray();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -174,14 +207,24 @@ public class MainActivity extends AppCompatActivity {
     public void initViews()
     {
         mPreview = (CameraSourcePreview) findViewById(R.id.camera_preview);
-        capturedPicturePreview = (ImageView) findViewById(R.id.capturedPicturePreview);
+//        capturedPicturePreview = (ImageView) findViewById(R.id.capturedPicturePreview);
         cameraLayout = (FrameLayout) findViewById(R.id.cameraLayout);
         buttonLayout = (RelativeLayout) findViewById(R.id.buttonLayout);
         imagePreviewLayout = (RelativeLayout) findViewById(R.id.imagePreviewLayout);
-        uploadButton = (Button) findViewById(R.id.uploadButton);
-        retryButton = (Button) findViewById(R.id.retryButton);
         mainWaitLayout = (LinearLayout) findViewById(R.id.main_wait_layout);
+        mCropImageView = (CropImageView) findViewById(R.id.cropImageView);
+        uploadButton = (Button) findViewById(R.id.uploadButton);
+        uploadButton.setTypeface(Pixie.fontawesome);
+        retryButton = (Button) findViewById(R.id.retryButton);
+        retryButton.setTypeface(Pixie.fontawesome);
         galleryButton = (Button) findViewById(R.id.galleryButton);
+        galleryButton.setTypeface(Pixie.fontawesome);
+        rotateButton = (Button) findViewById(R.id.rotateButton);
+        rotateButton.setTypeface(Pixie.fontawesome);
+        profileButton = (Button) findViewById(R.id.profile);
+        profileButton.setTypeface(Pixie.fontawesome);
+        cropButton = (Button) findViewById(R.id.cropButton);
+        cropButton.setTypeface(Pixie.fontawesome);
     }
 
     public void dispatchTakePictureIntent() {
@@ -208,6 +251,15 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
+    }
+
+    public void onCropImageClick() {
+        Bitmap cropped = mCropImageView.getCroppedImage();
+        if (cropped != null)
+            mCropImageView.setImageBitmap(cropped);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            cropped.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            imageData = stream.toByteArray();
     }
 
     private void initCamPreview() {
@@ -252,11 +304,10 @@ public class MainActivity extends AppCompatActivity {
             matrix.postRotate(90);
             mPreview.setVisibility(View.GONE);
             buttonLayout.setVisibility(View.GONE);
+            profileButton.setVisibility(View.GONE);
             imagePreviewLayout.setVisibility(View.VISIBLE);
-            capturedPicturePreview.setImageBitmap(photo);
+            mCropImageView.setImageBitmap(photo);
             //capturedPicturePreview.setImageBitmap(Bitmap.createBitmap(photo, 0, 0, photo.getWidth(), photo.getHeight(), matrix, true));
-
-
 
         }
     };
