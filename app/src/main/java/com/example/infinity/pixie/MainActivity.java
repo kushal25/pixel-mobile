@@ -62,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private Button galleryButton;
     private LinearLayout mainWaitLayout;
     private static final String TAG = "Main Activity";
-
+    public static String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+    public static String imgName = "img-" + timeStamp + ".jpg";
 
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
     private int PICK_IMAGE_REQUEST = 1;
@@ -441,11 +442,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+
         File mediaFile;
+
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "img-" + timeStamp + ".jpg");
+                    imgName);
         } else {
             return null;
         }

@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.concurrent.RunnableFuture;
 
 public class ExtractedDataActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener{
+    private MainActivity mainActivity;
+    private DatabaseHandler dbhandler;
     private ProgressDialog progressDialog;
     private ListView lv;
     ListAdapter adapter;
@@ -37,6 +39,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
     @TargetApi(Build.VERSION_CODES.CUPCAKE)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        dbhandler = new DatabaseHandler(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_extracted_data);
         extracted_items = new ArrayList<>();
@@ -58,12 +61,13 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                 if(data.containsKey("attr")){
                     if(i==0 && !data.get("value").equals("null")){
                         mEmail = data.get("value");
-                        Intent mail = new Intent(Intent.ACTION_SENDTO);
-                        mail.setData(Uri.parse("mailto:"));
-                        mail.setType("text/plain");
-
+                        Intent mail = new Intent(Intent.ACTION_SEND);
                         mail.putExtra(Intent.EXTRA_EMAIL,mEmail);
-                        Intent mailer = Intent.createChooser(mail, null);
+                        //mail.setData(Uri.parse("mailto:"));
+                        mail.setType("plain/type");
+
+
+                        Intent mailer = Intent.createChooser(mail, "Send Email");
                         startActivity(mailer);
 
                         //intent.putExtra(ContactsContract.Intents.Insert.EMAIL, mEmail);
@@ -118,6 +122,17 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
 
         @Override
         protected Void doInBackground(Void... arg0) {
+            //Add to database:
+            //String imgName = mainActivity.imgName;
+            String imgName =  "img-2";
+            String email =null;
+            String number =null;
+            String url =null;
+            String eDate =null;
+            String eSTime =null;
+            String eETime =null;
+            String text =null;
+            //////
             String extractedData = getIntent().getStringExtra("ExtractedData");
             extractedData = "{\n" +
                     "                \"ExtractedData\": [\n" +
@@ -153,14 +168,20 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
             //TextView responseText = (TextView) findViewById(R.id.responseText);
             //responseText.setText(extractedData);
             if (extractedData != null) {
+
                 try {
                     JSONObject jsonObject = new JSONObject(extractedData);
                     JSONArray items = jsonObject.getJSONArray("ExtractedData");
-                    for (int i = 0; i < items.length(); i++) {
+
+                    for (int i = 0; i < 4; i++) {
                         JSONObject c = items.getJSONObject(i);
-                            if(!c.getJSONArray("data").equals("null")){
+                        if(!c.isNull("data")&& c.getString("data")!=null && !"".equals(c.getString("data")) && !"null".equalsIgnoreCase(c.getString("data"))){
+
+                            if(!c.getJSONArray("data").equals(null)){
                                 String attr = c.getString("metadata");
+
                                 //TODO : Loop for each value
+
                                 String value = c.getJSONArray("data").get(0).toString();
 
                                 // tmp hash map for single contact
@@ -181,8 +202,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                                 extracted_items.add(hm);
                             }
 
-
-
+                        }
                     }
                 } catch (final JSONException e) {
                     Log.e(getLocalClassName(), "JSON parsing error ! : " + e.getMessage());
@@ -210,9 +230,79 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
 
             }
 
+//For Database
+
+            if (extractedData != null) {
+
+                try {
+                    JSONObject jsonObject = new JSONObject(extractedData);
+                    JSONArray items = jsonObject.getJSONArray("ExtractedData");
+                    if(!items.getJSONObject(0).isNull("data")){
+                        email=items.getJSONObject(0).getJSONArray("data").get(0).toString();
+                    }
+                    if(!items.getJSONObject(1).isNull("data")){
+                        number=items.getJSONObject(1).getJSONArray("data").get(0).toString();
+                    }
+                    if(!items.getJSONObject(2).isNull("data")){
+                        url=items.getJSONObject(2).getJSONArray("data").get(0).toString();
+                    }
+                    if(!items.getJSONObject(3).isNull("data")){
+                        eDate=items.getJSONObject(3).getJSONArray("data").get(0).toString();
+                    }
+                    /*if(!items.getJSONObject(4).isNull("data")){
+
+                        eSTime=items.getJSONObject(4).getJSONArray("data").get(0).toString();
+                        if(items.getJSONObject(4).getJSONArray("data").length()>=2){
+                        eETime=items.getJSONObject(4).getJSONArray("data").get(1).toString();
+                        }
+                    }*/
+                    /*if(!items.getJSONObject(5).isNull("data")){
+                        text=items.getJSONObject(5).getJSONArray("data").get(0).toString();
+                    }*/
+
+
+
+                dbhandler.insertTitle(imgName,email,number,url,eDate,eSTime,eETime,text);
+
+
+                } catch (final JSONException e) {
+                    Log.e(getLocalClassName(), "JSON parsing error ! : " + e.getMessage());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    "Json parsing error: " + e.getMessage(),
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        }
+                    });
+                }
+            } else {
+                Log.e(getLocalClassName(), "Couldn't get json from server.");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Couldn't get json from server. Check LogCat for possible errors!",
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+
+
+            }
+
+
+
+
+
             return null;
 
         }
+
+
+
+
         @TargetApi(Build.VERSION_CODES.CUPCAKE)
         @Override
         protected void onPostExecute(Void result) {
@@ -223,6 +313,8 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
             /**
              * Updating parsed JSON data into ListView
              * */
+            Toast.makeText(getApplicationContext(),"Image Data"+(dbhandler.getAllTitles()), Toast.LENGTH_LONG).show();
+            Log.d("Imagge Data :", dbhandler.getAllTitles().getString(1));
             adapter = new SimpleAdapter(
                     ExtractedDataActivity.this, extracted_items,
                     R.layout.list_item, new String[]{"attr", "value"}, new int[]{R.id.attr,
