@@ -28,5 +28,10 @@
     <string name="rotate_icon">&#xf01e;</string>
     <string name="upload_icon">&#xf093;</string>
     <string name="gallery_icon">&#xf03e;</string>
-
+    <string name="history_icon">&#xf0ca;</string>
+    <string name="settings_icon">&#xf013;</string>s
+    <string name="delete_icon">&#xf014;</string>
+    <string name="share_icon">&#xf1e0;</string>
+    <string name="about_us_icon">&#xf0c0;</string>
+    <string name="logout_icon">&#xf08b;</string>
 </resources>
