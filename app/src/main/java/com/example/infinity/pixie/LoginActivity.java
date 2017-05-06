@@ -5,14 +5,15 @@ import android.os.AsyncTask;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.example.infinity.pixie.service.HttpClientService;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.client.ClientProtocolException;
@@ -50,6 +52,44 @@ public class LoginActivity extends AppCompatActivity {
     private Matcher matcher;
     private TextView errorResponse;
     HttpResponse httpResponse;
+    HttpClientService httpClient = new HttpClientService();
+
+    JsonHttpResponseHandler loginListener = new JsonHttpResponseHandler() {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+            try {
+                loginWaitLayout.setVisibility(View.GONE);
+                if(statusCode == HttpURLConnection.HTTP_OK)
+                {
+                    Pixie.P.AUTH_CODE = response.getJSONObject("response").getString("X-Auth-Token").toString();
+                    Pixie.P.write(getApplicationContext());
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
+                }
+                else
+                {
+                    loginLayout.setVisibility(View.VISIBLE);
+                    errorResponse.setVisibility(View.VISIBLE);
+                    try {
+                        errorResponse.setText(response.get("response").toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onFailure(int statusCode, Header[] headers, String err, Throwable e) {
+            Pixie.showToast(LoginActivity.this, "Listener Error");
+            e.printStackTrace();
+        }
+    };
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +117,8 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     emailId.setErrorEnabled(false);
                     password.setErrorEnabled(false);
-                    sendPostRequest(emailIdString, passwordString);
+                    //sendPostRequest(emailIdString, passwordString);
+                    httpClient.userLogin(loginListener, emailIdString, passwordString);
                     loginLayout.setVisibility(View.GONE);
                     loginWaitLayout.setVisibility(View.VISIBLE);
                 }

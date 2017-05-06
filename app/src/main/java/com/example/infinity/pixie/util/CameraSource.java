@@ -1,4 +1,4 @@
-package com.example.infinity.pixie;
+package com.example.infinity.pixie.util;
 
 /**
  * Created by infinity on 4/22/17.

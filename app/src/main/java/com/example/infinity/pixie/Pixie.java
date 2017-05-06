@@ -3,6 +3,7 @@ package com.example.infinity.pixie;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
@@ -23,6 +24,7 @@ public class Pixie {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+    public static final String TAG = "Pixie";
 
     public static void appInit(Context cx) {
         P.read(cx);
@@ -80,13 +82,56 @@ public class Pixie {
     }
 
     public static final class P {
+        public static String APP_VERSION = "1.0.0";
+        public static String AUTH_CODE = "";
+        public static String NAME = "";
+        public static String EMAIL_ADDRESS = "";
+        public static String MOBILE_NUMBER = "";
+        public static String LAST_LOGIN_AT = "";
+        public static String USER_STATUS = "";
+        public static String SHARING_MSG = "Pixie is your Personal Virtual Assistant. Invite your friends";
+
         public static void read(Context cx)
         {
-            try {
+            try
+            {
                 if (null == fontawesome) {
                     fontawesome = Typeface.createFromAsset(cx.getAssets(), "fontawesome.ttf");
                 }
-            }catch(Exception e)
+
+                SharedPreferences pref = cx.getSharedPreferences(TAG, Activity.MODE_PRIVATE);
+
+                AUTH_CODE = pref.getString("AUTH_CODE", AUTH_CODE);
+                NAME = pref.getString("NAME", NAME);
+                EMAIL_ADDRESS = pref.getString("EMAIL_ADDRESS", EMAIL_ADDRESS);
+                MOBILE_NUMBER = pref.getString("MOBILE_NUMBER", MOBILE_NUMBER);
+                LAST_LOGIN_AT = pref.getString("LAST_LOGIN_AT", LAST_LOGIN_AT);
+                USER_STATUS = pref.getString("USER_STATUS", USER_STATUS);
+                SHARING_MSG = pref.getString("SHARING_MSG", SHARING_MSG);
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        public static void write(Context cx)
+        {
+            try
+            {
+                SharedPreferences.Editor prefEditor = cx.getSharedPreferences(TAG, Activity.MODE_PRIVATE).edit();
+                prefEditor.putString("AUTH_CODE", AUTH_CODE);
+                prefEditor.putString("NAME", NAME);
+                prefEditor.putString("AUTH_CODE", EMAIL_ADDRESS);
+                prefEditor.putString("AUTH_CODE", MOBILE_NUMBER);
+                prefEditor.putString("AUTH_CODE", LAST_LOGIN_AT);
+                prefEditor.putString("AUTH_CODE", USER_STATUS);
+                prefEditor.putString("AUTH_CODE", SHARING_MSG);
+
+                prefEditor.commit();
+
+            }
+            catch(Exception e)
             {
                 e.printStackTrace();
             }

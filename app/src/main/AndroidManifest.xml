@@ -50,8 +50,10 @@
         <activity
             android:name=".GalleryActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".ProfileActivity"
-            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ProfileActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".AccountInformation"></activity>
     </application>
 
 </manifest>
