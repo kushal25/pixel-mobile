@@ -17,7 +17,14 @@ import android.widget.Toast;
  */
 
 public class Pixie {
-
+    //Set Image Name On creation
+    public static String imgName;
+    public static void setImage(String imgN){
+        imgName = imgN;
+    }
+    public static String getImgName(){
+        return imgName;
+    }
     public static Typeface fontawesome = null;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
