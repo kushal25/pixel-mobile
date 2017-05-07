@@ -1,17 +1,22 @@
 package com.example.infinity.pixie;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.example.infinity.pixie.service.HttpClientService;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +32,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cz.msebera.android.httpclient.Header;
 import cz.msebera.android.httpclient.HttpResponse;
 import cz.msebera.android.httpclient.NameValuePair;
 import cz.msebera.android.httpclient.client.ClientProtocolException;
@@ -50,7 +56,42 @@ public class SignupActivity extends AppCompatActivity {
     private Pattern pattern = Pattern.compile(EMAIL_PATTERN);
     private Matcher matcher;
     private TextView errorResponse;
-    HttpResponse httpResponse;
+    HttpClientService httpClient = new HttpClientService();
+
+    JsonHttpResponseHandler signupListener = new JsonHttpResponseHandler() {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+            try {
+                signupWaitLayout.setVisibility(View.GONE);
+                if(statusCode == HttpURLConnection.HTTP_OK)
+                {
+                    Pixie.P.AUTH_CODE = response.getJSONObject("response").getString("X-Auth-Token").toString();
+                    Pixie.P.write(getApplicationContext());
+                    Intent intent = new Intent(SignupActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
+                }
+                else
+                {
+                    signupLayout.setVisibility(View.VISIBLE);
+                    errorResponse.setVisibility(View.VISIBLE);
+                    try {
+                        errorResponse.setText(response.get("response").toString());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onFailure(int statusCode, Header[] headers, String err, Throwable e) {
+            Pixie.showToast(SignupActivity.this, "Something went wrong. Please try again!!");
+            e.printStackTrace();
+        }
+    };
 
 
     @Override
@@ -67,6 +108,9 @@ public class SignupActivity extends AppCompatActivity {
                 passwordString = passwordEdit.getText().toString();
                 confirmPasswordString = confirmPasswordEdit.getText().toString();
                 mobileNumberString = mobileNumberEdit.getText().toString();
+
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
                 fullName.setError(null);
                 emailId.setError(null);
@@ -100,12 +144,10 @@ public class SignupActivity extends AppCompatActivity {
                     password.setErrorEnabled(false);
                     confirmPassword.setErrorEnabled(false);
                     mobileNumber.setErrorEnabled(false);
-                    sendPostRequest(nameString, emailIdString, passwordString, mobileNumberString);
+                    httpClient.userSignup(signupListener, nameString, emailIdString, passwordString, mobileNumberString);
                     signupLayout.setVisibility(View.GONE);
                     signupWaitLayout.setVisibility(View.VISIBLE);
                 }
-
-
             }
         });
 
@@ -125,6 +167,10 @@ public class SignupActivity extends AppCompatActivity {
         confirmPassword = (TextInputLayout) findViewById(R.id.confirmPasswordLayout);
         mobileNumber = (TextInputLayout) findViewById(R.id.mobileNumberLayout);
         fullNameEdit = (EditText) findViewById(R.id.fullName);
+        fullNameEdit.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        imm.hideSoftInputFromWindow(fullNameEdit.getWindowToken(), 0);
         emailIdEdit = (EditText) findViewById(R.id.userEmailId);
         passwordEdit = (EditText) findViewById(R.id.password);
         confirmPasswordEdit = (EditText) findViewById(R.id.confirmPassword);
@@ -134,93 +180,16 @@ public class SignupActivity extends AppCompatActivity {
         signupWaitLayout = (LinearLayout) findViewById(R.id.signup_wait_layout);
         errorResponse = (TextView) findViewById(R.id.errorResponse);
         signupLayout = (RelativeLayout) findViewById(R.id.signupLayout);
-
     }
 
-        private void sendPostRequest(String uName, String uEmail, String uPass, String uMob) {
-            class UserSignup extends AsyncTask<String, Void, String> {
-
-            @Override
-            protected String doInBackground(String... params) {
-
-                String userName = params[0];
-                String userEmail = params[1];
-                String userPassword = params[2];
-                String mobileNumber = params[3];
-
-                HttpClient httpClient = new DefaultHttpClient();
-
-                final HttpPost httppost = new HttpPost("http://52.53.93.85/api/users/userSignup");
-
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
-
-                nameValuePairs.add(new BasicNameValuePair("userName", userName));
-                nameValuePairs.add(new BasicNameValuePair("userEmail", userEmail));
-                nameValuePairs.add(new BasicNameValuePair("userPassword", userPassword));
-                nameValuePairs.add(new BasicNameValuePair("userPhoneNumber", mobileNumber));
-
-                try {
-                    UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuePairs);
-                    httppost.setEntity(urlEncodedFormEntity);
-
-                    try {
-                        httpResponse = httpClient.execute(httppost);
-                        InputStream inputStream = httpResponse.getEntity().getContent();
-                        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                        StringBuilder stringBuilder = new StringBuilder();
-                        String bufferedStrChunk = null;
-                        while ((bufferedStrChunk = bufferedReader.readLine()) != null) {
-                            stringBuilder.append(bufferedStrChunk);
-                        }
-                        return stringBuilder.toString();
-
-                    } catch (ClientProtocolException cpe) {
-                        System.out.println("First Exception HttpResponese :" + cpe);
-                        cpe.printStackTrace();
-                    } catch (IOException ioe) {
-                        System.out.println("Second Exception HttpResponse :" + ioe);
-                        ioe.printStackTrace();
-                    }
-
-                } catch (UnsupportedEncodingException uee) {
-                    System.out.println("An Exception given because of UrlEncodedFormEntity argument :" + uee);
-                    uee.printStackTrace();
-                }
-
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(final String response) {
-                super.onPostExecute(response);
-
-                signupWaitLayout.setVisibility(View.GONE);
-                if(httpResponse.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK)
-                {
-                    Intent intent = new Intent(SignupActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
-                }
-                else
-                {
-                    signupLayout.setVisibility(View.VISIBLE);
-                    errorResponse.setVisibility(View.VISIBLE);
-                    try {
-                        JSONObject jsonObj = new JSONObject(response);
-                        errorResponse.setText(jsonObj.get("response").toString());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-
-
-        UserSignup signup = new UserSignup();
-        signup.execute(uName, uEmail, uPass, uMob);
     }
 
     @Override

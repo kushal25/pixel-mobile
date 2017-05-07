@@ -1,11 +1,13 @@
 package com.example.infinity.pixie;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -51,7 +53,6 @@ public class LoginActivity extends AppCompatActivity {
     private Pattern pattern = Pattern.compile(EMAIL_PATTERN);
     private Matcher matcher;
     private TextView errorResponse;
-    HttpResponse httpResponse;
     HttpClientService httpClient = new HttpClientService();
 
     JsonHttpResponseHandler loginListener = new JsonHttpResponseHandler() {
@@ -84,7 +85,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void onFailure(int statusCode, Header[] headers, String err, Throwable e) {
-            Pixie.showToast(LoginActivity.this, "Listener Error");
+            Pixie.showToast(LoginActivity.this, "Something went wrong. Please try again!!");
             e.printStackTrace();
         }
     };
@@ -103,6 +104,10 @@ public class LoginActivity extends AppCompatActivity {
                 emailIdString = emailIdEdit.getText().toString();
                 passwordString = passwordEdit.getText().toString();
 
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+
+
                 emailId.setError(null);
                 password.setError(null);
 
@@ -117,7 +122,6 @@ public class LoginActivity extends AppCompatActivity {
                 } else {
                     emailId.setErrorEnabled(false);
                     password.setErrorEnabled(false);
-                    //sendPostRequest(emailIdString, passwordString);
                     httpClient.userLogin(loginListener, emailIdString, passwordString);
                     loginLayout.setVisibility(View.GONE);
                     loginWaitLayout.setVisibility(View.VISIBLE);
@@ -136,6 +140,9 @@ public class LoginActivity extends AppCompatActivity {
         emailId = (TextInputLayout) findViewById(R.id.userEmailIdLoginLayout);
         password = (TextInputLayout) findViewById(R.id.passwordLoginLayout);
         emailIdEdit = (EditText) findViewById(R.id.userEmailIdLogin);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        imm.hideSoftInputFromWindow(emailIdEdit.getWindowToken(), 0);
         passwordEdit = (EditText) findViewById(R.id.passwordLogin);
         loginButton = (Button) findViewById(R.id.loginBtn);
         loginWaitLayout = (LinearLayout) findViewById(R.id.login_wait_layout);
@@ -143,85 +150,14 @@ public class LoginActivity extends AppCompatActivity {
         loginLayout = (RelativeLayout) findViewById(R.id.loginLayout);
     }
 
-    private void sendPostRequest(String uEmail, String uPass) {
-        class UserLogin extends AsyncTask<String, Void, String> {
-
-            @Override
-            protected String doInBackground(String... params) {
-
-                String userEmail = params[0];
-                String userPassword = params[1];
-
-                HttpClient httpClient = new DefaultHttpClient();
-
-                final HttpPost httppost = new HttpPost("http://52.53.93.85/api/users/userLogin");
-
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(4);
-
-                nameValuePairs.add(new BasicNameValuePair("userEmail", userEmail));
-                nameValuePairs.add(new BasicNameValuePair("userPassword", userPassword));
-
-                try {
-                    UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(nameValuePairs);
-                    httppost.setEntity(urlEncodedFormEntity);
-                    try {
-                        httpResponse = httpClient.execute(httppost);
-                        InputStream inputStream = httpResponse.getEntity().getContent();
-                        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                        StringBuilder stringBuilder = new StringBuilder();
-                        String bufferedStrChunk = null;
-                        while ((bufferedStrChunk = bufferedReader.readLine()) != null) {
-                            stringBuilder.append(bufferedStrChunk);
-                        }
-                        return stringBuilder.toString();
-
-
-                    } catch (ClientProtocolException cpe) {
-                        System.out.println("First Exception HttpResponese :" + cpe);
-                        cpe.printStackTrace();
-                    } catch (IOException ioe) {
-                        System.out.println("Second Exception HttpResponse :" + ioe);
-                        ioe.printStackTrace();
-                    }
-
-                } catch (UnsupportedEncodingException uee) {
-                    System.out.println("An Exception given because of UrlEncodedFormEntity argument :" + uee);
-                    uee.printStackTrace();
-                }
-
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(final String response) {
-                super.onPostExecute(response);
-                loginWaitLayout.setVisibility(View.GONE);
-                if(httpResponse.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK)
-                {
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
-                }
-                else
-                {
-                    loginLayout.setVisibility(View.VISIBLE);
-                    errorResponse.setVisibility(View.VISIBLE);
-                    try {
-                        JSONObject jsonObj = new JSONObject(response);
-                        errorResponse.setText(jsonObj.get("response").toString());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-
-
-        UserLogin login = new UserLogin();
-        login.execute(uEmail, uPass);
     }
 
     @Override

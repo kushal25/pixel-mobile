@@ -43,6 +43,7 @@ public class HttpClientService {
     final String extractUrl = baseUrl + "images/writeData";
     final String loginUrl = baseUrl + "users/userLogin";
     final String userInfoUrl = baseUrl + "users/userInfo";
+    final String signupUrl = baseUrl + "users/userSignup";
     AsyncHttpClient httpClient = new AsyncHttpClient();
 ;
     public void extractData(JsonHttpResponseHandler listener) {
@@ -51,6 +52,19 @@ public class HttpClientService {
 
             httpClient.post(extractUrl, params, listener);
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void userSignup(JsonHttpResponseHandler listener, String userName, String userEmail, String userPassword, String userPhoneNumber){
+        try {
+            RequestParams params = new RequestParams();
+            params.put("userName", userName);
+            params.put("userEmail", userEmail);
+            params.put("userPassword", userPassword);
+            params.put("userPhoneNumber", userPhoneNumber);
+            httpClient.post(signupUrl, params, listener);
+        }catch(Exception e){
             e.printStackTrace();
         }
     }
@@ -67,7 +81,6 @@ public class HttpClientService {
     }
 
     public void userInfo(JsonHttpResponseHandler listener, String authToken) {
-        Log.d("Token", authToken);
         try {
             RequestParams params = new RequestParams();
             httpClient.addHeader("X-Auth-Token", authToken);
