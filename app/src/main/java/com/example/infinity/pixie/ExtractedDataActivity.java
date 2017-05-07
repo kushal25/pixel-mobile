@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.provider.CalendarContract;
 import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,6 +26,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.concurrent.RunnableFuture;
 
@@ -59,7 +63,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                 HashMap<String,String> data = (HashMap<String, String>) adapter.getItem(i);
                 Toast.makeText(ExtractedDataActivity.this, data.get("value"), Toast.LENGTH_LONG).show();
                 if(data.containsKey("attr")){
-                    if(i==0 && !data.get("value").equals("null")){
+                    if(data.get("attr") == "Email Address" && !data.get("value").equals("null")){
                         mEmail = data.get("value");
                         Intent mail = new Intent(Intent.ACTION_SEND);
                         mail.putExtra(Intent.EXTRA_EMAIL,mEmail);
@@ -72,17 +76,35 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
 
                         //intent.putExtra(ContactsContract.Intents.Insert.EMAIL, mEmail);
                         //startActivity(intent);
-                    }else if(i== 1 && !data.get("value").equals("null")){
+                    }else if(data.get("attr") == "Contact" && !data.get("value").equals("null")){
                         phoneNumber = data.get("value");
                         intent.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
                         startActivity(intent);
-                    } else if(i == 2 && !data.get("value").equals("null")){
+                    } else if(data.get("attr") == "Web URL" && !data.get("value").equals("null")){
 
                         url = "http://"+data.get("value");
                         Log.d("Url",url);
                         Intent browser = new Intent(Intent.ACTION_VIEW);
                         browser.setData(Uri.parse(url));
                         startActivity(browser);
+                    } else if(data.get("attr") == "Date" && !data.get("value").equals("null")){
+                        Calendar cal = new GregorianCalendar();
+                        cal.setTime(new Date());
+                        cal.add(Calendar.MONTH, 2);
+                        Intent intent1 = new Intent(Intent.ACTION_INSERT);
+                        intent1.setData(CalendarContract.Events.CONTENT_URI);
+                        intent1.putExtra(CalendarContract.Events.TITLE, "Some Test Event");
+                        intent1.putExtra(CalendarContract.Events.ALL_DAY, true);
+                        intent1.putExtra(
+                                CalendarContract.EXTRA_EVENT_BEGIN_TIME,
+                                cal.getTime().getTime());
+                        intent1.putExtra(
+                                CalendarContract.EXTRA_EVENT_END_TIME,
+                                cal.getTime().getTime() + 600000);
+                        intent1.putExtra(
+                                Intent.EXTRA_EMAIL,
+                                "attendee1@yourtest.com, attendee2@yourtest.com");
+                        startActivity(intent);
                     }
                 }
 
@@ -175,7 +197,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                     JSONObject jsonObject = new JSONObject(extractedData);
                     JSONArray items = jsonObject.getJSONArray("ExtractedData");
 
-                    for (int i = 0; i < 4; i++) {
+                    for (int i = 0; i <4; i++) {
                         JSONObject c = items.getJSONObject(i);
                         if(!c.isNull("data")&& c.getString("data")!=null && !"".equals(c.getString("data")) && !"null".equalsIgnoreCase(c.getString("data"))){
 
@@ -200,12 +222,28 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
 
 
 
+
                                 // adding contact to contact list
                                 extracted_items.add(hm);
                             }
 
                         }
                     }
+                    if(items.getJSONObject(4).isNull("data")){
+                        // tmp hash map for start Time
+                        HashMap<String, String> hm1 = new HashMap<>();
+                        hm1.put("attr",items.getJSONObject(4).getString("metadata"));
+                        hm1.put("value",items.getJSONObject(4).getString("data"));
+                        extracted_items.add(hm1);
+                    }
+                    if(items.getJSONObject(5).isNull("data")){
+                        // tmp hash map for end Time
+                        HashMap<String, String> hm1 = new HashMap<>();
+                        hm1.put("attr",items.getJSONObject(5).getString("metadata"));
+                        hm1.put("value",items.getJSONObject(5).getString("data"));
+                        extracted_items.add(hm1);
+                    }
+
                 } catch (final JSONException e) {
                     Log.e(getLocalClassName(), "JSON parsing error ! : " + e.getMessage());
                     runOnUiThread(new Runnable() {
@@ -251,6 +289,14 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                     if(!items.getJSONObject(3).isNull("data")){
                         eDate=items.getJSONObject(3).getJSONArray("data").get(0).toString();
                     }
+                    if(!items.getJSONObject(4).isNull("data")){
+                        eSTime = items.getJSONObject(4).getJSONArray("data").get(0).toString();
+                    }
+                    if(!items.getJSONObject(5).isNull("data")){
+                        eSTime = items.getJSONObject(5).getJSONArray("data").get(0).toString();
+                    }
+
+
                     /*if(!items.getJSONObject(4).isNull("data")){
 
                         eSTime=items.getJSONObject(4).getJSONArray("data").get(0).toString();
@@ -315,8 +361,8 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
             /**
              * Updating parsed JSON data into ListView
              * */
-            Toast.makeText(getApplicationContext(),"Image Data"+(dbhandler.getAllTitles()), Toast.LENGTH_LONG).show();
-            Log.d("Imagge Data :", dbhandler.getAllTitles().getString(1));
+            //Toast.makeText(getApplicationContext(),"Image Data"+(dbhandler.getAllTitles()), Toast.LENGTH_LONG).show();
+           //Log.d("Imagge Data :", dbhandler.getAllTitles().getString(1));
             adapter = new SimpleAdapter(
                     ExtractedDataActivity.this, extracted_items,
                     R.layout.list_item, new String[]{"attr", "value"}, new int[]{R.id.attr,
