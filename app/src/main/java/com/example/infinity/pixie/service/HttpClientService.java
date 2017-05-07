@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -46,10 +47,11 @@ public class HttpClientService {
     final String signupUrl = baseUrl + "users/userSignup";
     AsyncHttpClient httpClient = new AsyncHttpClient();
 ;
-    public void extractData(JsonHttpResponseHandler listener) {
+    public void extractData(JsonHttpResponseHandler listener, File file) {
         try {
+            File sourceFile = new File(file.getAbsolutePath());
             RequestParams params = new RequestParams();
-
+            params.put("img", sourceFile);
             httpClient.post(extractUrl, params, listener);
         } catch (Exception e) {
             e.printStackTrace();

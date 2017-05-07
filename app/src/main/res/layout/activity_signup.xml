@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:paddingBottom="100dp"
             android:singleLine="true"
-            android:text="WELCOME to PIXIE..."
+            android:text="WELCOME TO PIXIE"
             android:textSize="24sp"
             android:textStyle="bold"
             android:layout_gravity="center" />
@@ -42,7 +42,7 @@
             android:layout_gravity="center"
             android:paddingTop="100dp"
             android:singleLine="true"
-            android:text="MAY TAKE A FEW SECONDS."
+            android:text="MAY TAKE A FEW SECONDS..."
 
             android:textSize="24sp"
             android:textStyle="bold" />
