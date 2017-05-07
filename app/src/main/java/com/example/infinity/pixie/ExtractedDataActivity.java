@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.provider.CalendarContract;
 import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,6 +27,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.concurrent.RunnableFuture;
 
@@ -50,6 +55,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + i, Toast.LENGTH_LONG).show();
+
                 Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
                 intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
                 //HashMap<String,String> data=extracted_items.get(i);
@@ -57,9 +63,11 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                 String phoneNumber = null;
                 String url = null;
                 HashMap<String,String> data = (HashMap<String, String>) adapter.getItem(i);
-                Toast.makeText(ExtractedDataActivity.this, data.get("value"), Toast.LENGTH_LONG).show();
+                Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
+                //Toast.makeText(ExtractedDataActivity.this, data.get("value"), Toast.LENGTH_LONG).show();
                 if(data.containsKey("attr")){
-                    if(i==0 && !data.get("value").equals("null")){
+                    if(data.get("attr").equals("Email Address") && !data.get("value").equals("null")){
+                        Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
                         mEmail = data.get("value");
                         Intent mail = new Intent(Intent.ACTION_SEND);
                         mail.putExtra(Intent.EXTRA_EMAIL,mEmail);
@@ -72,17 +80,36 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
 
                         //intent.putExtra(ContactsContract.Intents.Insert.EMAIL, mEmail);
                         //startActivity(intent);
-                    }else if(i== 1 && !data.get("value").equals("null")){
+                    }else if(data.get("attr").equals("Contact") && !data.get("value").equals("null")){
+                        Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + data.get("attr"), Toast.LENGTH_LONG).show();
                         phoneNumber = data.get("value");
                         intent.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
                         startActivity(intent);
-                    } else if(i == 2 && !data.get("value").equals("null")){
-
+                    } else if(data.get("attr").equals("Web URL") && !data.get("value").equals("null")){
+                        Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
                         url = "http://"+data.get("value");
                         Log.d("Url",url);
                         Intent browser = new Intent(Intent.ACTION_VIEW);
                         browser.setData(Uri.parse(url));
                         startActivity(browser);
+                    } else if(data.get("attr").equals("Date") && !data.get("value").equals("null")){
+                        Calendar cal = new GregorianCalendar();
+                        cal.setTime(new Date());
+                        cal.add(Calendar.MONTH, 2);
+                        Intent intent1 = new Intent(Intent.ACTION_INSERT);
+                        intent1.setData(CalendarContract.Events.CONTENT_URI);
+                        intent1.putExtra(CalendarContract.Events.TITLE, "Some Test Event");
+                        intent1.putExtra(CalendarContract.Events.ALL_DAY, true);
+                        intent1.putExtra(
+                                CalendarContract.EXTRA_EVENT_BEGIN_TIME,
+                                cal.getTime().getTime());
+                        intent1.putExtra(
+                                CalendarContract.EXTRA_EVENT_END_TIME,
+                                cal.getTime().getTime() + 600000);
+                        intent1.putExtra(
+                                Intent.EXTRA_EMAIL,
+                                "attendee1@yourtest.com, attendee2@yourtest.com");
+                        startActivity(intent);
                     }
                 }
 
@@ -123,7 +150,8 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
         @Override
         protected Void doInBackground(Void... arg0) {
             //Add to database:
-            String imgName = mainActivity.imgName;
+
+            String imgName = Pixie.getImgName();
 
             String email =null;
             String number =null;
@@ -174,9 +202,10 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                 try {
                     JSONObject jsonObject = new JSONObject(extractedData);
                     JSONArray items = jsonObject.getJSONArray("ExtractedData");
-
-                    for (int i = 0; i < 4; i++) {
+                    System.out.println("JSON response"+ items.toString());
+                    for (int i = 0; i <4; i++) {
                         JSONObject c = items.getJSONObject(i);
+                        System.out.println("C in I"+ c);
                         if(!c.isNull("data")&& c.getString("data")!=null && !"".equals(c.getString("data")) && !"null".equalsIgnoreCase(c.getString("data"))){
 
                             if(!c.getJSONArray("data").equals(null)){
@@ -184,28 +213,48 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
 
                                 //TODO : Loop for each value
 
-                                String value = c.getJSONArray("data").get(0).toString();
+                                //String value = c.getJSONArray("data").get(0).toString();
+                                System.out.println("data len : "+c.getJSONArray("data").length() );
+                                for (int j =0; j<c.getJSONArray("data").length();j++ ){
+                                    System.out.println("In for loop j: "+j +" Value at j: " +c.getJSONArray("data").get(j) );
 
-                                // tmp hash map for single contact
-                                HashMap<String, String> hm = new HashMap<>();
+                                    // tmp hash map for single contact
+                                    HashMap<String, String> hm = new HashMap<>();
 
-                                // adding each child node to HashMap key => value
-                                if(!attr.equals("null")){
-                                    hm.put("attr", attr);
+                                    // adding each child node to HashMap key => value
+
+                                    if(!attr.equals("null")){
+                                        hm.put("attr", attr);
+                                    }
+                                    if(!c.getJSONArray("data").get(j).toString().equals("null")){
+                                        hm.put("value", c.getJSONArray("data").get(j).toString());
+                                    }
+
+                                    // adding contact to contact list
+                                    extracted_items.add(hm);
                                 }
-                                if(!value.equals("null")){
-                                    hm.put("value", value);
-                                }
 
-
-
-
-                                // adding contact to contact list
-                                extracted_items.add(hm);
                             }
 
                         }
                     }
+                    System.out.println("Get Strat time out: "+items.getJSONObject(4).getString("data") );
+                    if(  !"null".equals(items.getJSONObject(4).getString("data"))){
+                        // tmp hash map for start Time
+                        HashMap<String, String> hm1 = new HashMap<>();
+                        hm1.put("attr",items.getJSONObject(4).getString("metadata"));
+                        System.out.println("Get Strat time : "+items.getJSONObject(4).getString("data") );
+                        hm1.put("value",items.getJSONObject(4).getString("data"));
+                        extracted_items.add(hm1);
+                    }
+                    if( !"null".equals(items.getJSONObject(5).getString("data"))){
+                        // tmp hash map for end Time
+                        HashMap<String, String> hm1 = new HashMap<>();
+                        hm1.put("attr",items.getJSONObject(5).getString("metadata"));
+                        hm1.put("value",items.getJSONObject(5).getString("data"));
+                        extracted_items.add(hm1);
+                    }
+
                 } catch (final JSONException e) {
                     Log.e(getLocalClassName(), "JSON parsing error ! : " + e.getMessage());
                     runOnUiThread(new Runnable() {
@@ -251,6 +300,14 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                     if(!items.getJSONObject(3).isNull("data")){
                         eDate=items.getJSONObject(3).getJSONArray("data").get(0).toString();
                     }
+                    if(!items.getJSONObject(4).isNull("data")){
+                        eSTime = items.getJSONObject(4).getString("data");
+                    }
+                    if(!items.getJSONObject(5).isNull("data")){
+                        eSTime = items.getJSONObject(5).getString("data");
+                    }
+
+
                     /*if(!items.getJSONObject(4).isNull("data")){
 
                         eSTime=items.getJSONObject(4).getJSONArray("data").get(0).toString();
@@ -315,8 +372,8 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
             /**
              * Updating parsed JSON data into ListView
              * */
-            Toast.makeText(getApplicationContext(),"Image Data"+(dbhandler.getAllTitles()), Toast.LENGTH_LONG).show();
-            Log.d("Imagge Data :", dbhandler.getAllTitles().getString(1));
+            //Toast.makeText(getApplicationContext(),"Image Data"+(dbhandler.getAllTitles()), Toast.LENGTH_LONG).show();
+           //Log.d("Imagge Data :", dbhandler.getAllTitles().getString(1));
             adapter = new SimpleAdapter(
                     ExtractedDataActivity.this, extracted_items,
                     R.layout.list_item, new String[]{"attr", "value"}, new int[]{R.id.attr,

@@ -64,9 +64,10 @@ public class MainActivity extends AppCompatActivity {
     private Button profileButton;
     private Button cropButton;
     private LinearLayout mainWaitLayout;
+
     private static final String TAG = "Main Activity";
     public static String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-    public static String imgName = "img-" + timeStamp + ".jpg";
+
 
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
     private int PICK_IMAGE_REQUEST = 1;
@@ -500,9 +501,12 @@ public class MainActivity extends AppCompatActivity {
 
         File mediaFile;
 
+        String imgName = "img-" + timeStamp + ".jpg";
+        Pixie.setImage(imgName);
+
         if (type == MEDIA_TYPE_IMAGE) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    imgName);
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator + Pixie.getImgName()
+            );
         } else {
             return null;
         }
