@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:textColor="@color/background_color"
+        android:background="@android:color/transparent"
+        android:textSize="20sp"
+        android:padding="10dp"
+        android:alpha="0.7"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:id="@+id/menuIcon"/>
+
+    <TextView
+        android:id="@+id/menuItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:maxLines="1"
+        android:text="@string/app_name"
+        android:textStyle="normal"
+        android:padding="10dp"
+        android:layout_alignTop="@+id/menuIcon"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>

@@ -25,6 +25,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.example.infinity.pixie.util.CameraSource;
+import com.example.infinity.pixie.util.CameraSourcePreview;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -167,7 +169,9 @@ public class MainActivity extends AppCompatActivity {
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Pixie.showToast(MainActivity.this,"Go to profile Screen");
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                startActivity(intent);
+                overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
             }
         });
 

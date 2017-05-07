@@ -1,4 +1,4 @@
-package com.example.infinity.pixie;
+package com.example.infinity.pixie.util;
 
 /**
  * Created by infinity on 4/22/17.
@@ -14,6 +14,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 
+import com.example.infinity.pixie.util.CameraSource;
 import com.google.android.gms.common.images.Size;
 
 import java.io.IOException;
