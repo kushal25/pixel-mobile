@@ -28,7 +28,6 @@ public class ProfileActivity extends AppCompatActivity {
         profileMenuListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Pixie.showToast(ProfileActivity.this, "position: " + i);
                 switch (i)
                 {
                     case 0:
@@ -36,18 +35,21 @@ public class ProfileActivity extends AppCompatActivity {
                         startActivity(accountInfoIntent);
                         overridePendingTransition(R.anim.slide_from_right, R.anim.slide_to_left);
                         break;
-//                    case 1:
+                    case 1:
 //                        Intent historyIntent = new Intent(ProfileActivity.this, HistoryActivity.class);
 //                        startActivity(historyIntent);
-//                        break;
-//                    case 2:
+                        Pixie.showToast(ProfileActivity.this, "Work in Progress");
+                        break;
+                    case 2:
 //                        Intent settingsIntent = new Intent(ProfileActivity.this, SettingsActivity.class);
 //                        startActivity(settingsIntent);
-//                        break;
-//                    case 3:
+                        Pixie.showToast(ProfileActivity.this, "Work in Progress");
+                        break;
+                    case 3:
 //                        Intent aboutUsIntent = new Intent(ProfileActivity.this, AboutUsActivity.class);
 //                        startActivity(aboutUsIntent);
-//                        break;
+                        Pixie.showToast(ProfileActivity.this, "Work in Progress");
+                        break;
                     case 4:
                         Intent shareIntent = new Intent();
 
@@ -62,10 +64,13 @@ public class ProfileActivity extends AppCompatActivity {
                         startActivity(shareIntent);
                         break;
                     case 5:
-                        Intent logoutIntent = new Intent(ProfileActivity.this, LoginActivity.class);
+                        Intent logoutIntent = new Intent(ProfileActivity.this, HomeActivity.class);
                         Pixie.P.AUTH_CODE = null;
                         Pixie.P.write(getApplicationContext());
+                        logoutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        logoutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(logoutIntent);
+
                         break;
                     default:
                         Pixie.showToast(ProfileActivity.this, "Something went wrong. Try Again");

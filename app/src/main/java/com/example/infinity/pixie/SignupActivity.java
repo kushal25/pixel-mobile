@@ -1,11 +1,16 @@
 package com.example.infinity.pixie;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.design.widget.TextInputLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -57,6 +62,7 @@ public class SignupActivity extends AppCompatActivity {
     private Matcher matcher;
     private TextView errorResponse;
     HttpClientService httpClient = new HttpClientService();
+    public Dialog mDialog = null;
 
     JsonHttpResponseHandler signupListener = new JsonHttpResponseHandler() {
         @Override
@@ -87,9 +93,15 @@ public class SignupActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onFailure(int statusCode, Header[] headers, String err, Throwable e) {
-            Pixie.showToast(SignupActivity.this, "Something went wrong. Please try again!!");
-            e.printStackTrace();
+        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+            signupWaitLayout.setVisibility(View.GONE);
+            signupLayout.setVisibility(View.VISIBLE);
+            errorResponse.setVisibility(View.VISIBLE);
+            try {
+                errorResponse.setText(response.get("response").toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     };
 
@@ -103,54 +115,93 @@ public class SignupActivity extends AppCompatActivity {
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                nameString = fullNameEdit.getText().toString();
-                emailIdString = emailIdEdit.getText().toString();
-                passwordString = passwordEdit.getText().toString();
-                confirmPasswordString = confirmPasswordEdit.getText().toString();
-                mobileNumberString = mobileNumberEdit.getText().toString();
+                if(Pixie.isNetworkOK(SignupActivity.this)) {
+                    nameString = fullNameEdit.getText().toString();
+                    emailIdString = emailIdEdit.getText().toString();
+                    passwordString = passwordEdit.getText().toString();
+                    confirmPasswordString = confirmPasswordEdit.getText().toString();
+                    mobileNumberString = mobileNumberEdit.getText().toString();
 
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
-                fullName.setError(null);
-                emailId.setError(null);
-                password.setError(null);
-                confirmPassword.setError(null);
-                mobileNumber.setError(null);
+                    fullName.setError(null);
+                    emailId.setError(null);
+                    password.setError(null);
+                    confirmPassword.setError(null);
+                    mobileNumber.setError(null);
 
-                if (nameString.trim().isEmpty()) {
-                    fullName.setError("Name field cannot be empty");
-                } else if (emailIdString.trim().isEmpty()) {
-                    emailId.setError("Email field cannot be empty");
-                } else if (!validateEmail(emailIdString)) {
-                    emailId.setError("Email Address is Invalid");
-                } else if (passwordString.trim().isEmpty()) {
-                    password.setError("Password field cannot be empty");
-                } else if (passwordString.trim().length() < 8) {
-                    password.setError("Password Should be 8 or more characters");
-                } else if (confirmPasswordString.trim().isEmpty()) {
-                    confirmPassword.setError("Confirm Password field cannot be empty");
-                } else if (confirmPasswordString.trim().length() < 8) {
-                    confirmPassword.setError("Confirm Password Should be 8 or more characters");
-                } else if (!passwordString.equals(confirmPasswordString)) {
-                    Pixie.showToast(SignupActivity.this, "Password and Confirm Password is not the same");
-                } else if (mobileNumberString.trim().isEmpty()) {
-                    mobileNumber.setError("Mobile Number field cannot be empty");
-                } else if (!terms.isChecked()) {
-                    Pixie.showToast(SignupActivity.this, "Please Check the terms and conditions for signup");
-                } else {
-                    fullName.setErrorEnabled(false);
-                    emailId.setErrorEnabled(false);
-                    password.setErrorEnabled(false);
-                    confirmPassword.setErrorEnabled(false);
-                    mobileNumber.setErrorEnabled(false);
-                    httpClient.userSignup(signupListener, nameString, emailIdString, passwordString, mobileNumberString);
-                    signupLayout.setVisibility(View.GONE);
-                    signupWaitLayout.setVisibility(View.VISIBLE);
+                    if (nameString.trim().isEmpty()) {
+                        fullName.setError("Name field cannot be empty");
+                    } else if (emailIdString.trim().isEmpty()) {
+                        emailId.setError("Email field cannot be empty");
+                    } else if (!validateEmail(emailIdString)) {
+                        emailId.setError("Email Address is Invalid");
+                    } else if (passwordString.trim().isEmpty()) {
+                        password.setError("Password field cannot be empty");
+                    } else if (passwordString.trim().length() < 8) {
+                        password.setError("Password Should be 8 or more characters");
+                    } else if (confirmPasswordString.trim().isEmpty()) {
+                        confirmPassword.setError("Confirm Password field cannot be empty");
+                    } else if (confirmPasswordString.trim().length() < 8) {
+                        confirmPassword.setError("Confirm Password Should be 8 or more characters");
+                    } else if (!passwordString.equals(confirmPasswordString)) {
+                        Pixie.showToast(SignupActivity.this, "Password and Confirm Password is not the same");
+                    } else if (mobileNumberString.trim().isEmpty()) {
+                        mobileNumber.setError("Mobile Number field cannot be empty");
+                    } else if (!terms.isChecked()) {
+                        Pixie.showToast(SignupActivity.this, "Please Check the terms and conditions for signup");
+                    } else {
+                        fullName.setErrorEnabled(false);
+                        emailId.setErrorEnabled(false);
+                        password.setErrorEnabled(false);
+                        confirmPassword.setErrorEnabled(false);
+                        mobileNumber.setErrorEnabled(false);
+                        httpClient.userSignup(signupListener, nameString, emailIdString, passwordString, mobileNumberString);
+                        signupLayout.setVisibility(View.GONE);
+                        signupWaitLayout.setVisibility(View.VISIBLE);
+                    }
+                }
+                else {
+                    openConnectionDialog();
                 }
             }
         });
 
+    }
+
+    public void openConnectionDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(SignupActivity.this);
+        LayoutInflater inflater = getLayoutInflater();
+        RelativeLayout dialogView = (RelativeLayout) inflater.inflate(R.layout.dialog_no_internet, null);
+        TextView textTitle = (TextView) dialogView.findViewById(R.id.title);
+        TextView retryBtn = (TextView) dialogView.findViewById(R.id.retry);
+        builder.setView(dialogView);
+
+        mDialog = builder.create();
+        mDialog.setCancelable(false);
+        retryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Pixie.isNetworkOK(SignupActivity.this)) {
+                    mDialog.dismiss();
+                    onResume();
+                } else {
+                    openConnectionDialog();
+                }
+            }
+        });
+        mDialog.setOnKeyListener(new Dialog.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    dialog.dismiss();
+                }
+                return true;
+            }
+        });
+        mDialog.show();
     }
 
     public boolean validateEmail(String email) {
