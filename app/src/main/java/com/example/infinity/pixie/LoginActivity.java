@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.example.infinity.pixie.service.HttpClientService;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -90,9 +91,15 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onFailure(int statusCode, Header[] headers, String err, Throwable e) {
-            Pixie.showToast(LoginActivity.this, "Something went wrong. Please try again!!");
-            e.printStackTrace();
+        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+            loginWaitLayout.setVisibility(View.GONE);
+            loginLayout.setVisibility(View.VISIBLE);
+            errorResponse.setVisibility(View.VISIBLE);
+            try {
+                errorResponse.setText(response.get("response").toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     };
 

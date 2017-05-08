@@ -93,9 +93,15 @@ public class SignupActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onFailure(int statusCode, Header[] headers, String err, Throwable e) {
-            Pixie.showToast(SignupActivity.this, "Something went wrong. Please try again!!");
-            e.printStackTrace();
+        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject response) {
+            signupWaitLayout.setVisibility(View.GONE);
+            signupLayout.setVisibility(View.VISIBLE);
+            errorResponse.setVisibility(View.VISIBLE);
+            try {
+                errorResponse.setText(response.get("response").toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     };
 
