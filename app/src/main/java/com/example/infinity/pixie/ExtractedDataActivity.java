@@ -125,7 +125,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
     //Implemented Long click on list view for extracted data.
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        Toast.makeText(this, "long clicked pos: " + position, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "long clicked pos: " + position, Toast.LENGTH_LONG).show();
 
         return true;
     }

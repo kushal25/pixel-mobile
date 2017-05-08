@@ -2,6 +2,7 @@ package com.example.infinity.pixie;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,15 +16,18 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.example.infinity.pixie.service.HttpClientService;
 import com.example.infinity.pixie.util.CameraSource;
@@ -88,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
     private byte[] xDpi = null;
     private byte[] yDpi = null;
+    public Dialog mDialog = null;
 
     private byte[] imageData = null;
     File pictureFile = null;
@@ -102,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
             super.onSuccess(statusCode, headers, response);
-            Pixie.showToast(MainActivity.this, "Post Execution");
             mainWaitLayout.setVisibility(View.GONE);
             Intent intent = new Intent(MainActivity.this, ExtractedDataActivity.class);
             Log.d("Extracted Data", response.toString());
@@ -135,30 +139,35 @@ public class MainActivity extends AppCompatActivity {
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-                if (pictureFile == null) {
-                    Log.d(TAG, "Error creating media file, check storage permissions: " +
-                            "e.getMessage()");
-                    return;
-                }
+                if(Pixie.isNetworkOK(MainActivity.this)) {
+                    pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+                    if (pictureFile == null) {
+                        Log.d(TAG, "Error creating media file, check storage permissions: " +
+                                "e.getMessage()");
+                        return;
+                    }
 
-                try {
-                    FileOutputStream fos = new FileOutputStream(pictureFile);
-                    fos.write(imageData);
-                    fos.close();
-                } catch (FileNotFoundException e) {
-                    Log.d(TAG, "File not found: " + e.getMessage());
-                } catch (IOException e) {
-                    Log.d(TAG, "Error accessing file: " + e.getMessage());
-                }
+                    try {
+                        FileOutputStream fos = new FileOutputStream(pictureFile);
+                        fos.write(imageData);
+                        fos.close();
+                    } catch (FileNotFoundException e) {
+                        Log.d(TAG, "File not found: " + e.getMessage());
+                    } catch (IOException e) {
+                        Log.d(TAG, "Error accessing file: " + e.getMessage());
+                    }
 
-                //setContainersVisibility(View.INVISIBLE);
-                imagePreviewLayout.setVisibility(View.GONE);
-                buttonLayout.setVisibility(View.GONE);
-                profileButton.setVisibility(View.GONE);
-                //new UploadPicture().execute(pictureFile);
-                httpClient.extractData(uploadListener,pictureFile);
-                mainWaitLayout.setVisibility(View.VISIBLE);
+                    //setContainersVisibility(View.INVISIBLE);
+                    imagePreviewLayout.setVisibility(View.GONE);
+                    buttonLayout.setVisibility(View.GONE);
+                    profileButton.setVisibility(View.GONE);
+                    //new UploadPicture().execute(pictureFile);
+                    httpClient.extractData(uploadListener, pictureFile);
+                    mainWaitLayout.setVisibility(View.VISIBLE);
+                }
+                else {
+                    openConnectionDialog();
+                }
             }
         });
 
@@ -276,6 +285,40 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void openConnectionDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        LayoutInflater inflater = getLayoutInflater();
+        RelativeLayout dialogView = (RelativeLayout) inflater.inflate(R.layout.dialog_no_internet, null);
+        TextView textTitle = (TextView) dialogView.findViewById(R.id.title);
+        TextView retryBtn = (TextView) dialogView.findViewById(R.id.retry);
+        builder.setView(dialogView);
+
+        mDialog = builder.create();
+        mDialog.setCancelable(false);
+        retryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Pixie.isNetworkOK(MainActivity.this)) {
+                    mDialog.dismiss();
+                    onResume();
+                } else {
+                    openConnectionDialog();
+                }
+            }
+        });
+        mDialog.setOnKeyListener(new Dialog.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    dialog.dismiss();
+                }
+                return true;
+            }
+        });
+        mDialog.show();
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -370,6 +413,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+
 
     private class UploadPicture extends AsyncTask<File, Void, String> {
 

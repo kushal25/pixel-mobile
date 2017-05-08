@@ -1,11 +1,16 @@
 package com.example.infinity.pixie;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.design.widget.TextInputLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -53,6 +58,7 @@ public class LoginActivity extends AppCompatActivity {
     private Pattern pattern = Pattern.compile(EMAIL_PATTERN);
     private Matcher matcher;
     private TextView errorResponse;
+    public Dialog mDialog = null;
     HttpClientService httpClient = new HttpClientService();
 
     JsonHttpResponseHandler loginListener = new JsonHttpResponseHandler() {
@@ -101,30 +107,36 @@ public class LoginActivity extends AppCompatActivity {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                emailIdString = emailIdEdit.getText().toString();
-                passwordString = passwordEdit.getText().toString();
+                if(Pixie.isNetworkOK(LoginActivity.this)) {
+                    emailIdString = emailIdEdit.getText().toString();
+                    passwordString = passwordEdit.getText().toString();
 
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
 
 
-                emailId.setError(null);
-                password.setError(null);
+                    emailId.setError(null);
+                    password.setError(null);
 
-                if (emailIdString.trim().isEmpty()) {
-                    emailId.setError("Email field cannot be empty");
-                } else if (!validateEmail(emailIdString)) {
-                    emailId.setError("Email Address is Invalid");
-                } else if (passwordString.trim().isEmpty()) {
-                    password.setError("Password field cannot be empty");
-                } else if (passwordString.trim().length() < 8) {
-                    password.setError("Password Should be 8 or more characters");
-                } else {
-                    emailId.setErrorEnabled(false);
-                    password.setErrorEnabled(false);
-                    httpClient.userLogin(loginListener, emailIdString, passwordString);
-                    loginLayout.setVisibility(View.GONE);
-                    loginWaitLayout.setVisibility(View.VISIBLE);
+                    if (emailIdString.trim().isEmpty()) {
+                        emailId.setError("Email field cannot be empty");
+                    } else if (!validateEmail(emailIdString)) {
+                        emailId.setError("Email Address is Invalid");
+                    } else if (passwordString.trim().isEmpty()) {
+                        password.setError("Password field cannot be empty");
+                    } else if (passwordString.trim().length() < 8) {
+                        password.setError("Password Should be 8 or more characters");
+                    } else {
+                        emailId.setErrorEnabled(false);
+                        password.setErrorEnabled(false);
+                        httpClient.userLogin(loginListener, emailIdString, passwordString);
+                        loginLayout.setVisibility(View.GONE);
+                        loginWaitLayout.setVisibility(View.VISIBLE);
+                    }
+                }
+                else
+                {
+                    openConnectionDialog();
                 }
             }
         });
@@ -148,6 +160,40 @@ public class LoginActivity extends AppCompatActivity {
         loginWaitLayout = (LinearLayout) findViewById(R.id.login_wait_layout);
         errorResponse = (TextView) findViewById(R.id.errorResponseLogin);
         loginLayout = (RelativeLayout) findViewById(R.id.loginLayout);
+    }
+
+    public void openConnectionDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+        LayoutInflater inflater = getLayoutInflater();
+        RelativeLayout dialogView = (RelativeLayout) inflater.inflate(R.layout.dialog_no_internet, null);
+        TextView textTitle = (TextView) dialogView.findViewById(R.id.title);
+        TextView retryBtn = (TextView) dialogView.findViewById(R.id.retry);
+        builder.setView(dialogView);
+
+        mDialog = builder.create();
+        mDialog.setCancelable(false);
+        retryBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Pixie.isNetworkOK(LoginActivity.this)) {
+                    mDialog.dismiss();
+                    onResume();
+                } else {
+                    openConnectionDialog();
+                }
+            }
+        });
+        mDialog.setOnKeyListener(new Dialog.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    dialog.dismiss();
+                }
+                return true;
+            }
+        });
+        mDialog.show();
     }
 
     @Override
