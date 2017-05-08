@@ -90,7 +90,7 @@ public class Pixie {
 
     public static final class P {
         public static String APP_VERSION = "1.0.0";
-        public static String AUTH_CODE = "";
+        public static String AUTH_CODE = null;
         public static String NAME = "";
         public static String EMAIL_ADDRESS = "";
         public static String MOBILE_NUMBER = "";
@@ -129,11 +129,11 @@ public class Pixie {
                 SharedPreferences.Editor prefEditor = cx.getSharedPreferences(TAG, Activity.MODE_PRIVATE).edit();
                 prefEditor.putString("AUTH_CODE", AUTH_CODE);
                 prefEditor.putString("NAME", NAME);
-                prefEditor.putString("AUTH_CODE", EMAIL_ADDRESS);
-                prefEditor.putString("AUTH_CODE", MOBILE_NUMBER);
-                prefEditor.putString("AUTH_CODE", LAST_LOGIN_AT);
-                prefEditor.putString("AUTH_CODE", USER_STATUS);
-                prefEditor.putString("AUTH_CODE", SHARING_MSG);
+                prefEditor.putString("EMAIL_ADDRESS", EMAIL_ADDRESS);
+                prefEditor.putString("MOBILE_NUMBER", MOBILE_NUMBER);
+                prefEditor.putString("LAST_LOGIN_AT", LAST_LOGIN_AT);
+                prefEditor.putString("USER_STATUS", USER_STATUS);
+                prefEditor.putString("SHARING_MSG", SHARING_MSG);
 
                 prefEditor.commit();
 

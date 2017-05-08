@@ -3,6 +3,7 @@ package com.example.infinity.pixie;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -20,6 +21,10 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        if(Pixie.P.AUTH_CODE!=null)
+        {
+            goToMain();
+        }
         initView();
 
         gifImageView.setGifImageResource(R.drawable.gif_image);
@@ -50,4 +55,16 @@ public class HomeActivity extends AppCompatActivity {
         getStarted = (Button) findViewById(R.id.getStarted);
     }
 
+    public void goToMain() {
+        HomeActivity.this.finish();
+        Intent callIntent = new Intent(HomeActivity.this, MainActivity.class);
+        callIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(callIntent);
+        //onDestroy();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

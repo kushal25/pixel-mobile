@@ -63,6 +63,8 @@ public class ProfileActivity extends AppCompatActivity {
                         break;
                     case 5:
                         Intent logoutIntent = new Intent(ProfileActivity.this, LoginActivity.class);
+                        Pixie.P.AUTH_CODE = null;
+                        Pixie.P.write(getApplicationContext());
                         startActivity(logoutIntent);
                         break;
                     default:
