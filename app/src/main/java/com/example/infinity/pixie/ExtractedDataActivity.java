@@ -12,6 +12,7 @@ import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -26,11 +27,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.concurrent.RunnableFuture;
 
 public class ExtractedDataActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener{
@@ -38,12 +42,19 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
     private DatabaseHandler dbhandler;
     private ProgressDialog progressDialog;
     private ListView lv;
+    private String startTime;
+    private String endTime;
+    private String dDate;
+    private String eventEmail;
+    private String d
+            ;
+    String arr[];
     ListAdapter adapter;
     ArrayList<HashMap<String, String>> extracted_items;
 
     @TargetApi(Build.VERSION_CODES.CUPCAKE)
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         dbhandler = new DatabaseHandler(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_extracted_data);
@@ -56,8 +67,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + i, Toast.LENGTH_LONG).show();
 
-                Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
-                intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+
                 //HashMap<String,String> data=extracted_items.get(i);
                 String mEmail = null;
                 String phoneNumber = null;
@@ -70,7 +80,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                         Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
                         mEmail = data.get("value");
                         Intent mail = new Intent(Intent.ACTION_SEND);
-                        mail.putExtra(Intent.EXTRA_EMAIL,mEmail);
+                        mail.putExtra(Intent.EXTRA_EMAIL,eventEmail);
                         //mail.setData(Uri.parse("mailto:"));
                         mail.setType("plain/type");
 
@@ -81,6 +91,8 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                         //intent.putExtra(ContactsContract.Intents.Insert.EMAIL, mEmail);
                         //startActivity(intent);
                     }else if(data.get("attr").equals("Contact") && !data.get("value").equals("null")){
+                        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+                        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
                         Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + data.get("attr"), Toast.LENGTH_LONG).show();
                         phoneNumber = data.get("value");
                         intent.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
@@ -93,23 +105,75 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                         browser.setData(Uri.parse(url));
                         startActivity(browser);
                     } else if(data.get("attr").equals("Date") && !data.get("value").equals("null")){
-                        Calendar cal = new GregorianCalendar();
-                        cal.setTime(new Date());
-                        cal.add(Calendar.MONTH, 2);
+                        try{
+                        /*//all version of android
+                        Intent cal = new Intent();
+
+                        // mimeType will popup the chooser any  for any implementing application (e.g. the built in calendar or applications such as "Business calendar"
+                        cal.setType("vnd.android.cursor.item/event");
+
+                        // the time the event should start in millis. This example uses now as the start time and ends in 1 hour
+                        cal.putExtra("beginTime",startTime);
+                        cal.putExtra("endTime", endTime);
+
+                        // the action
+                        cal.setAction(Intent.ACTION_EDIT);
+                        startActivity(cal);*/
+                       String x = "June 27,  2007";
+                        String arr1[] = x.split("[\\s,;]+");
+                        String string = "January 2, 2010";
+                        DateFormat format = new SimpleDateFormat("MMMM d, yyyy", Locale.ENGLISH);
+
+                        Date dddate = format.parse(string);System.out.println(dddate);
+
                         Intent intent1 = new Intent(Intent.ACTION_INSERT);
+                        intent1.setType("vnd.android.cursor.item/event");
+
                         intent1.setData(CalendarContract.Events.CONTENT_URI);
-                        intent1.putExtra(CalendarContract.Events.TITLE, "Some Test Event");
-                        intent1.putExtra(CalendarContract.Events.ALL_DAY, true);
-                        intent1.putExtra(
+                        intent1.putExtra(CalendarContract.Events.TITLE, ""+arr[0]+arr[1]);
+                        intent1.putExtra(CalendarContract.Events.ALL_DAY, false);
+                        GregorianCalendar calDate = new GregorianCalendar();
+                            calDate.set(2017,Calendar.MAY,16,12,0);
+
+                        System.out.println("Email"+eventEmail+ " start time  : " + startTime + " endtime  ; " + endTime);
+
+                            intent1.putExtra(
                                 CalendarContract.EXTRA_EVENT_BEGIN_TIME,
-                                cal.getTime().getTime());
+                                calDate.getTimeInMillis());
                         intent1.putExtra(
                                 CalendarContract.EXTRA_EVENT_END_TIME,
-                                cal.getTime().getTime() + 600000);
+                                1.8e+7);
                         intent1.putExtra(
-                                Intent.EXTRA_EMAIL,
-                                "attendee1@yourtest.com, attendee2@yourtest.com");
-                        startActivity(intent);
+                                Intent.EXTRA_EMAIL,eventEmail
+                                );
+                        startActivity(intent1);
+                        /*Calendar cal = Calendar.getInstance();
+                        Intent intent = new Intent(Intent.ACTION_EDIT);
+                        intent.setType("vnd.android.cursor.item/event");
+                            System.out.println("Email"+mEmail+ " start time  : " + startTime + " endtime  ; " + endTime);
+                        intent.putExtra("beginTime", startTime);
+                        intent.putExtra("allDay", false);
+
+                        intent.putExtra("endTime", endTime);
+                        intent.putExtra("title", ""+arr[0]+arr[1]);
+                        startActivity(intent);*/
+                    }catch (Exception e){
+                            Log.e(getLocalClassName(), "parsing error ! : " + e.getMessage());
+
+                        }
+                    } else if(data.get("attr").equals("CompleteText") && !data.get("value").equals("null")){
+                        Intent txt = new Intent();
+                        txt.setAction(Intent.ACTION_SEND);
+                        txt.putExtra(Intent.EXTRA_TEXT, "Extra Text");
+                        txt.setType("text/plain");
+
+                        Intent clipboardIntent = new Intent();
+                        clipboardIntent.putExtra(Intent.EXTRA_TEXT, "Extra Text");
+                        clipboardIntent.putExtra(Intent.EXTRA_SUBJECT, ""+arr[0]+arr[1]);
+
+                        Intent chooserIntent = Intent.createChooser(txt, ""+arr[0]+arr[1]);
+                        chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] { clipboardIntent });
+                        startActivity(chooserIntent);
                     }
                 }
 
@@ -210,6 +274,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                 try {
                     JSONObject jsonObject = new JSONObject(extractedData);
                     JSONArray items = jsonObject.getJSONArray("ExtractedData");
+                    HashMap<String, String> hm2 = new HashMap<>();
                     System.out.println("JSON response"+ items.toString());
                     for (int i = 0; i <4; i++) {
                         JSONObject c = items.getJSONObject(i);
@@ -230,12 +295,19 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                                     HashMap<String, String> hm = new HashMap<>();
 
                                     // adding each child node to HashMap key => value
-
+                                    String value = c.getJSONArray("data").get(j).toString();
+                                    if(attr.equals("Email Address") || attr.equals("Web URL")){
+                                        value= value.replace("5","s");
+                                        eventEmail = value;
+                                    }
+                                    if(attr.equals("Date")){
+                                        dDate = value;
+                                    }
                                     if(!attr.equals("null")){
                                         hm.put("attr", attr);
                                     }
                                     if(!c.getJSONArray("data").get(j).toString().equals("null")){
-                                        hm.put("value", c.getJSONArray("data").get(j).toString());
+                                        hm.put("value", value );
                                     }
 
                                     // adding contact to contact list
@@ -250,17 +322,29 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                     if(  !"null".equals(items.getJSONObject(4).getString("data"))){
                         // tmp hash map for start Time
                         HashMap<String, String> hm1 = new HashMap<>();
+                        startTime =items.getJSONObject(4).getString("data");
                         hm1.put("attr",items.getJSONObject(4).getString("metadata"));
                         System.out.println("Get Strat time : "+items.getJSONObject(4).getString("data") );
-                        hm1.put("value",items.getJSONObject(4).getString("data"));
+                        hm1.put("value",startTime);
                         extracted_items.add(hm1);
+
+
+                        arr = items.getJSONObject(6).getString("data").split(" ", 2);
+                        hm2.put("attr",items.getJSONObject(6).getString("metadata"));
+                        hm2.put("value",items.getJSONObject(6).getString("data"));
+
+
                     }
                     if( !"null".equals(items.getJSONObject(5).getString("data"))){
                         // tmp hash map for end Time
                         HashMap<String, String> hm1 = new HashMap<>();
+                        endTime =items.getJSONObject(5).getString("data");
                         hm1.put("attr",items.getJSONObject(5).getString("metadata"));
-                        hm1.put("value",items.getJSONObject(5).getString("data"));
+                        hm1.put("value",endTime);
                         extracted_items.add(hm1);
+                    }
+                    if(!hm2.isEmpty()){
+                        extracted_items.add(hm2);
                     }
 
                 } catch (final JSONException e) {
@@ -298,6 +382,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                     JSONArray items = jsonObject.getJSONArray("ExtractedData");
                     if(!items.getJSONObject(0).isNull("data")){
                         email=items.getJSONObject(0).getJSONArray("data").get(0).toString();
+                        email = email.replace("5","s");
                     }
                     if(!items.getJSONObject(1).isNull("data")){
                         number=items.getJSONObject(1).getJSONArray("data").get(0).toString();
