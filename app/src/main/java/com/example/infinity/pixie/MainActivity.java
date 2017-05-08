@@ -25,11 +25,15 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.example.infinity.pixie.service.HttpClientService;
 import com.example.infinity.pixie.util.CameraSource;
 import com.example.infinity.pixie.util.CameraSourcePreview;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -45,6 +49,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import cz.msebera.android.httpclient.Header;
 
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 
@@ -90,6 +96,32 @@ public class MainActivity extends AppCompatActivity {
 
     private Uri mCropImageUri;
 
+    HttpClientService httpClient = new HttpClientService();
+
+    JsonHttpResponseHandler uploadListener = new JsonHttpResponseHandler(){
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+            super.onSuccess(statusCode, headers, response);
+            Pixie.showToast(MainActivity.this, "Post Execution");
+            mainWaitLayout.setVisibility(View.GONE);
+            Intent intent = new Intent(MainActivity.this, ExtractedDataActivity.class);
+            Log.d("Extracted Data", response.toString());
+            Bundle bundle = new Bundle();
+            bundle.putString("ExtractedData", response.toString());
+
+            intent.putExtras(bundle);
+
+            startActivity(intent);
+
+        }
+
+        @Override
+        public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+            super.onFailure(statusCode, headers, responseString, throwable);
+            Pixie.showToast(MainActivity.this, "Something went wrong. Please try again!!");
+            throwable.printStackTrace();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,7 +156,8 @@ public class MainActivity extends AppCompatActivity {
                 imagePreviewLayout.setVisibility(View.GONE);
                 buttonLayout.setVisibility(View.GONE);
                 profileButton.setVisibility(View.GONE);
-                new UploadPicture().execute(pictureFile);
+                //new UploadPicture().execute(pictureFile);
+                httpClient.extractData(uploadListener,pictureFile);
                 mainWaitLayout.setVisibility(View.VISIBLE);
             }
         });
@@ -133,12 +166,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 imageData = null;
-                startCameraSource();
                 imagePreviewLayout.setVisibility(View.GONE);
                 mPreview.setVisibility(View.VISIBLE);
                 buttonLayout.setVisibility(View.VISIBLE);
                 profileButton.setVisibility(View.VISIBLE);
-                //setContainersVisibility(View.INVISIBLE);
+                if (mPreview != null) {
+                    mPreview.stop();
+                }
+                startCameraSource();
             }
         });
 
@@ -517,6 +552,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        if (mPreview != null) {
+            mPreview.stop();
+        }
         startCameraSource();
     }
 

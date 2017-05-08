@@ -130,6 +130,14 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
         return true;
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent mainIntent = new Intent(ExtractedDataActivity.this, MainActivity.class);
+        startActivity(mainIntent);
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
+    }
+
     /**
      * Async task class to get json by making HTTP call
      */
