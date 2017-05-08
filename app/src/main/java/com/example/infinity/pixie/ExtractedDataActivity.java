@@ -65,7 +65,7 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                 OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + i, Toast.LENGTH_LONG).show();
+                //Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + i, Toast.LENGTH_LONG).show();
 
 
                 //HashMap<String,String> data=extracted_items.get(i);
@@ -73,11 +73,11 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                 String phoneNumber = null;
                 String url = null;
                 HashMap<String,String> data = (HashMap<String, String>) adapter.getItem(i);
-                Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
+                //Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
                 //Toast.makeText(ExtractedDataActivity.this, data.get("value"), Toast.LENGTH_LONG).show();
                 if(data.containsKey("attr")){
                     if(data.get("attr").equals("Email Address") && !data.get("value").equals("null")){
-                        Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
+                        //Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
                         mEmail = data.get("value");
                         Intent mail = new Intent(Intent.ACTION_SEND);
                         mail.putExtra(Intent.EXTRA_EMAIL,eventEmail);
@@ -93,12 +93,12 @@ public class ExtractedDataActivity extends AppCompatActivity implements AdapterV
                     }else if(data.get("attr").equals("Contact") && !data.get("value").equals("null")){
                         Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
                         intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
-                        Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + data.get("attr"), Toast.LENGTH_LONG).show();
+                        //Toast.makeText(ExtractedDataActivity.this, "long clicked pos: " + data.get("attr"), Toast.LENGTH_LONG).show();
                         phoneNumber = data.get("value");
                         intent.putExtra(ContactsContract.Intents.Insert.PHONE, phoneNumber);
                         startActivity(intent);
                     } else if(data.get("attr").equals("Web URL") && !data.get("value").equals("null")){
-                        Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
+                        //Toast.makeText(ExtractedDataActivity.this, data.get("attr"), Toast.LENGTH_LONG).show();
                         url = "http://"+data.get("value");
                         Log.d("Url",url);
                         Intent browser = new Intent(Intent.ACTION_VIEW);

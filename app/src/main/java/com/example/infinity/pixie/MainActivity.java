@@ -52,6 +52,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import cz.msebera.android.httpclient.Header;
@@ -76,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout mainWaitLayout;
 
     private static final String TAG = "Main Activity";
-    public static String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-
+    //public static String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+    public static long timeStamp = Calendar.getInstance().getTimeInMillis();
 
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
     private int PICK_IMAGE_REQUEST = 1;
