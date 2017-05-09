@@ -19,7 +19,7 @@
 
     <ListView
         android:id="@+id/extracted_items"
-        android:layout_below="@id/extractedData"
+        android:layout_below="@+id/extractedData"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </RelativeLayout>

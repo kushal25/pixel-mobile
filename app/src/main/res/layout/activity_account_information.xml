@@ -10,8 +10,18 @@
     <TextView
         android:layout_width="wrap_content"
         android:id="@+id/resultText"
-        android:textSize="20sp"
-        android:text="Server Response"
+        android:text="Account Information"
+        android:padding="20dp"
+        android:textColor="@color/background_color"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_height="wrap_content" />
+
+    <ListView
+        android:id="@+id/accountInfoListView"
+        android:layout_below="@+id/resultText"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
 </RelativeLayout>
