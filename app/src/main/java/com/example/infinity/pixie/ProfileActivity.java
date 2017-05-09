@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.example.infinity.pixie.adapter.ProfileAdapter;
@@ -16,6 +17,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private ListView profileMenuListView;
     private ProfileAdapter profileAdapter = null;
+    private LinearLayout profileWaitLayout;
     ArrayList<String> listItems  = new ArrayList<>();
     ArrayList<Integer> listIcons  = new ArrayList<>();
 
@@ -52,25 +54,22 @@ public class ProfileActivity extends AppCompatActivity {
                         break;
                     case 4:
                         Intent shareIntent = new Intent();
-
                         shareIntent.setAction(Intent.ACTION_SEND);
                         shareIntent.putExtra(Intent.EXTRA_TEXT, Pixie.P.SHARING_MSG);
                         shareIntent.setType("text/plain");
-
                         String shareTitle = ProfileActivity.this.getResources().getString(R.string.share_title);
                         ProfileActivity.this.startActivity(Intent.createChooser(shareIntent, shareTitle));
-
-
                         startActivity(shareIntent);
                         break;
                     case 5:
+                        profileWaitLayout.setVisibility(View.VISIBLE);
                         Intent logoutIntent = new Intent(ProfileActivity.this, HomeActivity.class);
                         Pixie.P.AUTH_CODE = null;
                         Pixie.P.write(getApplicationContext());
                         logoutIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         logoutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(logoutIntent);
-
+                        profileWaitLayout.setVisibility(View.GONE);
                         break;
                     default:
                         Pixie.showToast(ProfileActivity.this, "Something went wrong. Try Again");
@@ -101,6 +100,7 @@ public class ProfileActivity extends AppCompatActivity {
         this.profileAdapter = new ProfileAdapter(this,listItems, listIcons);
         this.profileMenuListView.setAdapter(profileAdapter);
         this.profileMenuListView.setSmoothScrollbarEnabled(true);
+        profileWaitLayout = (LinearLayout) findViewById(R.id.profile_wait_layout);
     }
 
     @Override

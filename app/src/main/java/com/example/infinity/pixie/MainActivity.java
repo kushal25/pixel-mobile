@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
             super.onFailure(statusCode, headers, responseString, throwable);
+            mainWaitLayout.setVisibility(View.GONE);
             Pixie.showToast(MainActivity.this, "Something went wrong. Please try again!!");
             throwable.printStackTrace();
         }
@@ -163,8 +164,8 @@ public class MainActivity extends AppCompatActivity {
                     buttonLayout.setVisibility(View.GONE);
                     profileButton.setVisibility(View.GONE);
                     //new UploadPicture().execute(pictureFile);
-                    httpClient.extractData(uploadListener, pictureFile);
                     mainWaitLayout.setVisibility(View.VISIBLE);
+                    httpClient.extractData(uploadListener, pictureFile);
                 }
                 else {
                     openConnectionDialog();
