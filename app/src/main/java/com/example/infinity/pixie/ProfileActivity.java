@@ -84,21 +84,6 @@ public class ProfileActivity extends AppCompatActivity {
                         }
                         break;
                     case 1:
-//                        Intent historyIntent = new Intent(ProfileActivity.this, HistoryActivity.class);
-//                        startActivity(historyIntent);
-                        Pixie.showToast(ProfileActivity.this, "Work in Progress");
-                        break;
-                    case 2:
-//                        Intent settingsIntent = new Intent(ProfileActivity.this, SettingsActivity.class);
-//                        startActivity(settingsIntent);
-                        Pixie.showToast(ProfileActivity.this, "Work in Progress");
-                        break;
-                    case 3:
-//                        Intent aboutUsIntent = new Intent(ProfileActivity.this, AboutUsActivity.class);
-//                        startActivity(aboutUsIntent);
-                        Pixie.showToast(ProfileActivity.this, "Work in Progress");
-                        break;
-                    case 4:
                         Intent shareIntent = new Intent();
                         shareIntent.setAction(Intent.ACTION_SEND);
                         shareIntent.putExtra(Intent.EXTRA_TEXT, Pixie.P.SHARING_MSG);
@@ -107,7 +92,7 @@ public class ProfileActivity extends AppCompatActivity {
                         ProfileActivity.this.startActivity(Intent.createChooser(shareIntent, shareTitle));
                         startActivity(shareIntent);
                         break;
-                    case 5:
+                    case 2:
                         profileWaitLayout.setVisibility(View.VISIBLE);
                         Intent logoutIntent = new Intent(ProfileActivity.this, HomeActivity.class);
                         Pixie.P.AUTH_CODE = null;
@@ -209,15 +194,9 @@ public class ProfileActivity extends AppCompatActivity {
 
     public void initializeData(){
         listItems.add("Account Information");
-        listItems.add("History");
-        listItems.add("Settings");
-        listItems.add("About Us");
         listItems.add("Invite your friends");
         listItems.add("Logout");
         listIcons.add(R.string.profile_icon);
-        listIcons.add(R.string.history_icon);
-        listIcons.add(R.string.settings_icon);
-        listIcons.add(R.string.about_us_icon);
         listIcons.add(R.string.share_icon);
         listIcons.add(R.string.logout_icon);
     }

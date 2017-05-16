@@ -37,6 +37,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -123,6 +124,22 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
             super.onFailure(statusCode, headers, responseString, throwable);
+            mainWaitLayout.setVisibility(View.GONE);
+            Pixie.showToast(MainActivity.this, "Something went wrong. Please try again!!");
+            throwable.printStackTrace();
+        }
+
+        @Override
+        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+            super.onFailure(statusCode, headers, throwable, errorResponse);
+            mainWaitLayout.setVisibility(View.GONE);
+            Pixie.showToast(MainActivity.this, "Something went wrong. Please try again!!");
+            throwable.printStackTrace();
+        }
+
+        @Override
+        public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+            super.onFailure(statusCode, headers, throwable, errorResponse);
             mainWaitLayout.setVisibility(View.GONE);
             Pixie.showToast(MainActivity.this, "Something went wrong. Please try again!!");
             throwable.printStackTrace();
