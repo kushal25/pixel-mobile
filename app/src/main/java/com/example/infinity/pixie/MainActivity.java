@@ -212,10 +212,8 @@ public class MainActivity extends AppCompatActivity {
 //                Intent intent = new Intent(MainActivity.this,GalleryActivity.class);
 //                startActivity(intent);
                 Intent intent = new Intent();
-// Show only images, no videos or anything else
                 intent.setType("image/*");
                 intent.setAction(Intent.ACTION_GET_CONTENT);
-// Always show the chooser (if there are multiple options available)
                 startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
 
                 //startActivityForResult(getPickImageChooserIntent(), 200);
@@ -365,9 +363,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initCamPreview() {
-        // permission hai! enjoy!!
-        // Creates and starts the camera.  Note that this uses a higher resolution in comparison
-        // to other detection examples to enable the text recognizer to detect small pieces of text.
         mCameraSource =
                 new CameraSource.Builder(getApplicationContext())
                         .setFacing(CameraSource.CAMERA_FACING_BACK)
@@ -377,13 +372,12 @@ public class MainActivity extends AppCompatActivity {
                         .setFocusMode(autoFocus ? Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE : null)
                         .build();
 
-        // Add a listener to the Capture button
         Button captureButton = (Button) findViewById(R.id.button_capture);
         captureButton.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // get an image from the camera
+
                         mCameraSource.takePicture(new CameraSource.ShutterCallback() {
                             @Override
                             public void onShutter() {
@@ -415,7 +409,6 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void startCameraSource() throws SecurityException {
-        // Check that the device has play services available.
         int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getApplicationContext());
         if (code != ConnectionResult.SUCCESS) {
             Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
@@ -569,26 +562,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Create a file Uri for saving an image or video
-     */
-//    private static Uri getOutputMediaFileUri(int type) {
-//        return Uri.fromFile(getOutputMediaFile(type));
-//    }
 
     /**
      * Create a File for saving an image or video
      */
     private static File getOutputMediaFile(int type) {
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "Pixie");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
 
-        // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d("MyCameraApp", "failed to create directory");

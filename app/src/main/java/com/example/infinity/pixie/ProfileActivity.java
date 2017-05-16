@@ -146,6 +146,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     public void initializeDataFromService(JSONObject res)
     {
+        keyItems.clear();
+        valueitems.clear();
         Iterator<String> keys = res.keys();
         while(keys.hasNext()){
             try {
